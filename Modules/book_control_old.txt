@@ -1,0 +1,118 @@
+"""
+Class for retrieving and validating user input for table 'books' and returning 
+applicable data from 'books' table
+
+Database connection, query creation and exceptions are not handled in this class
+but called by instance 'database_controller'. Modifications or class extensions must 
+conform to class descriptions as specified in 'persistence_classes' module or 
+'database_controller' can be changed (ensuring data return conforms to None or data
+as a list)
+
+Change of database controller from project default may be performed by function call
+'change_database_controller()'
+"""
+
+# allow for import from Modules in Parent Directory
+# Referenced from: StackOverflow - Rob Ellenbroek and Peter Mortensen on 10 July 2023
+# Available from: https://stackoverflow.com/questions/714063/importing-modules-from-parent-folder
+import sys
+sys.path.append('.')
+# import module allowing for database queries for table with single primary_key
+from Modules.persistance_layer import persistence_classes_single_key
+
+
+class BookDataControl:
+    """Class handling user_input, validation and data retrieval for table 'books'
+        instance database_controller handles database_connection, query creation and execution
+
+    Attributes:
+    -----------
+    database_name: string
+        name of database to connect to
+    table_name: string
+        name of table in above database to perfro queries against
+    database_action: string
+        description of CRUD operation to determine respective class function call
+        with options as: 'Create Table', 'New Book', 'Search_Book' Update_Book' or
+        'Delete_Book'
+    database_controller: object
+        object (default as child class of persistance_layer.persistence_classes_single_key)
+        used for database connection, query creation and execution
+
+    Methods:
+    ----------
+    __init__(self, database_name, table_name, database_action):
+        constructor initializing database to connect to with table to perform queries against, 
+        passed to database_controller. database_action determines respective action to perform
+        against database.
+
+    change_database_controller(self, database_controller):
+        allow change of database_controller from default 'persistence_classes_single_key'
+        Functional call is optional to change functionality for persistance layer.
+
+    """
+
+    def __init__(self, database_name, table_name, database_action):
+        """Constructor initialising book_data_control object.
+
+        Keyword Arguments:
+        ----------
+        database_name: string
+            name of database to connect to and perform queries against
+        table_name: string
+            name of table to execute queries against
+        database_action: string
+            description of CRUD operation to determine respective class function call
+            with options as: 'Create Table', 'New Book', 'Search_Book' Update_Book' or
+            'Delete_Book'
+        """
+        self.database_name = database_name
+        self.table_name = table_name
+        self.database_action = database_action
+        # function call corresponding to "database_name" and "database_action"
+        # will initialise corresponding database_controller class
+        self.database_controller = None
+
+    def change_database_controller(self, database_controller):
+        """allow change of database_controller from default 'persistence_classes_single_key'
+            Functional call is optional to change functionality for persistance layer.
+
+            Arguments:
+            ----------
+            database_controller: object of new database_controller type
+                new database_controller - object to manage persistance layer functionality
+        """
+        self.database_controller = database_controller
+
+    def database_manager_class_action(self, database_controller = None):
+        """ Determine CRUD function call below based on database_action attribute.
+            Modifications to class for alternative query values and creations must be
+            added here, with possible new database_controller set with
+            'change_database_controller()' first
+        """
+        # Create a new, default book table (call intended to be performed automatically)
+        if self.database_action == "Create Table":
+            self.create_default_table(self.database_controller)
+        # Request data for and add a new book as row in database
+        elif self.database_action == "New Book":
+            self.add_new_book()
+
+    def create_default_table(self, database_controller):
+        """Create a new, default book table with fields as:
+            id : int
+            Title: string
+            Author: string
+            Qty (quantity): int
+        """
+        # use 'persistance_layer.persistence_classes_single_key' module to create new table
+        # in specified database
+        if self.database_controller is None:
+            self.database_controller = persistence_classes_single_key.CreateTableSingleKey(self.database_name, self.table_name,
+                                                            "id", ["Qty"], ["title", "Author"])
+            self.database_controller.execute()
+            self.database_controller = None
+
+    def add_new_book(self):
+        """"""
+        pass
+	

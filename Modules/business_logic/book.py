@@ -2,14 +2,18 @@
 Module holding classes for user_input retrieval and validation for 'book' table
 with a single primary key. Imports and use of this module Must be done through
 control class 'BookController' with 'action' attribute to determine correct instance
-of other classes to create and return. Function 'create_crud_instance()' must then be
+of other classes to create and return. 
+
+Valid BookController Arguments are:
+"Create Default Table", "Create Book", "Search Book", "Update Book" and "Delete Book"
+
+Function 'create_crud_instance()' must then be
 called for correct class instance return for CRUD Operation
 
 NOTE: Database logic and queries are not handled by classes within this module. All
-classes return a populated instance to calling method. Database and table names are
+classes return a populated instance to calling method or None. Database and table names are
 not handled in this module
 """
-
 
 class BookController:
     """Main class of Module used to determine which lower class instance to return
@@ -143,6 +147,7 @@ class CreateBook:
         "return attributes of 'CreateBook' instance as string for testing"
         return f"title: {self.title}, author: {self.author}, quantity: {self.quantity}"
 
+
     def retrieve_string_value(self, input_message):
         """Request, retrieve and validate user input for a string (text) attribute and return value.
 
@@ -163,6 +168,7 @@ class CreateBook:
                 print("\nAn input was not recieved.")
             else:
                 return user_input
+
 
     def retrieve_numeric_value(self, data_type, input_message, error_message, value_range=None):
         """Rquest, retrieve, validate and return user_input for a numeric value.
@@ -272,10 +278,11 @@ class BookSearch:
     # values corresponding to where_fields_list above
     search_values = None
 
+
     def __init__(self):
-        """call 'search_book_single_field' method to request and validated user_input to populate class
-        arguments 'where_fields_list' and 'search_values'. Return of None to constructor indicates
-        incorrect arguments where given to 'search_book_single_field' method.
+        """call 'search_book_single_field' method to request and validated user_input to populate
+            class arguments 'where_fields_list' and 'search_values'. Return of None to constructor
+            indicates incorrect arguments where given to 'search_book_single_field' method.
         """
         self.search_book_single_field(["id", "quantity"], ["author"], [])
 
@@ -287,8 +294,8 @@ class BookSearch:
 
 
     def search_book_single_field(self, int_list, text_list, float_list):
-        """determine search criteria from user to perform a book(s) search. Method requests and validates
-            one field_name and one corresponding search_value used for search in database.
+        """determine search criteria from user to perform a book(s) search. Method requests and
+            validates one field_name and one corresponding search_value used for search in database.
 
         Keyword Arguments:
         ------------------
@@ -420,8 +427,8 @@ class BookSearch:
                 print("\nPlease enter a valid number for your choice.")
 
     def check_no_list_duplicates(self, int_list, text_list, float_list):
-        """Helper Function validating there are no between or in the three lists.
-            Lists may be empty.
+        """Helper Function validating there are no duplicated values between or in
+            the three lists. Lists may be empty.
 
         Keyword Arguments:
         ------------------
@@ -434,14 +441,14 @@ class BookSearch:
 
         Return:
         -------
-        True for no duplicates, False if duplicate is found between any argument lists
+        True for no duplicates, False if duplicate value (field_name) is found
         """
         # combine all lists into single list
         combined_list = int_list + text_list + float_list
         # Perform check within combined list to check for any duplicates. As lists are
         # anticipated to be small, checking complexity for all three lists has been left as 0(n^2)
-        for i in range(0, len(combined_list)-1):
-            for j in range(i+1, len(combined_list)):
+        for i in range(0, len(combined_list) - 1):
+            for j in range(i + 1, len(combined_list)):
                 if combined_list[i] == combined_list[j]:
                     return False
 

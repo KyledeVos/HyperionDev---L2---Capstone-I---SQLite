@@ -36,6 +36,8 @@ from Modules.business_logic import book
 # 3) Search for a book
 book_controller = book.BookController("Search Book")
 book_object = book_controller.create_crud_instance()
+print(book_object)
+
 
 ############################################################################
 # TESTING FOR persistence_classes_single_key

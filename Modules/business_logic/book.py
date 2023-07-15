@@ -1,19 +1,75 @@
 """
 Module holding classes for user_input retrieval and validation for 'book' table
-with a single primary key. Imports and use of this module Must be done through
-control class 'BookController' with 'action' attribute to determine correct instance
-of other classes to create and return. 
+with a single primary key. Module has individual classes to handle CRUD operation data
+retrieval. Imports and use of this module MUST be done as:
 
-Valid BookController Arguments are:
-"Create Default Table", "Create Book", "Search Book", "Update Book" and "Delete Book"
+1) Use of Component class 'FieldControl' to set primary_field name and other
+    field names and types. This component Class and all other Composite classes
+    only allow for types as 'Integer', 'String' and 'Float'. Fields are set within 
+    constructor and class instance should not be created seperate from this module.
 
-Function 'create_crud_instance()' must then be
-called for correct class instance return for CRUD Operation
+2) Control class 'BookController' with 'action' attribute to determine correct instance
+    of other classes to create and return. 
+    Valid BookController Arguments are:
+    "Create Default Table", "Create Book", "Search Book", "Update Book" and "Delete Book"
+
+3) Function 'create_crud_instance()' MUST then be called for correct class instance return
+    for CRUD Operation
 
 NOTE: Database logic and queries are not handled by classes within this module. All
-classes return a populated instance to calling method or None. Database and table names are
-not handled in this module
+classes return a populated instance to calling method or None. Database and table names as well
+as primary_key increments and tracking are not handled in this module
 """
+
+
+class FieldControl():
+    """A component class used to set the names of fields and their types for any composite
+    class. Changes to field names, types and number of fields must be made in this class.
+
+    Attributes:
+    -----------
+    primary_key: list of tuple
+        contains a single-field primary key name and its associated type
+    int_list: list of tuple
+        list containing tuples of field names and their type as an Integer
+    text_list: list of tuple
+        list containing tuples of field names and their type as a text (String)
+    text_list: list of tuple
+        list containing tuples of field names and their type as a float (Real)
+
+    Method:
+    -------
+    __init__(self):
+        used to initialise component and set primary_key, field names and their associated types
+
+    __str__(self):
+        print all declared field_names and types for testing
+    """
+
+    def __init__(self):
+        """Constructor to set primary_key, field names and their associated types"""
+        self.primary_key = ("id", "int")
+        self.int_list = [("quantity", "int")]
+        self.text_list = [("author", "text"), ("title", "text")]
+        self.float_list = []
+
+        # perform check that primary_key field has been stated
+        if not self.primary_key:
+            print("Error Log - A Primary Key has not been stated for 'Book' Entity")
+            return None
+
+        # perform check that at least one list has been populated
+        if not self.int_list and not self.text_list and not self.float_list:
+            print(
+                "Error Log -At least one additional field has been stated for 'Book' Entity")
+            return None
+
+
+    def __str__(self):
+        """return attributes of 'FieldControl' instance as string for testing"""
+        return (f"PK: {self.primary_key}, Integer_List: {self.int_list}, " +
+                f"Text_List: {self.text_list}, Float_List: {self.float_list}")
+
 
 class BookController:
     """Main class of Module used to determine which lower class instance to return
@@ -41,11 +97,10 @@ class BookController:
         self.book_action = book_action
 
     def create_crud_instance(self):
-        """uses 'book_action" to determine object to instantiate of lower classes."""
-
-        # Create Default book table with fields as: 'id', 'title' 'author'
-        # NOTE: Constructors for each class will call respective method to create
-        #       required object instance
+        """uses 'book_action" to determine object to instantiate of lower classes.
+        NOTE: Constructors for each class will call respective method to create
+              required object instance
+        """
         if self.book_action == "Create Default Table":
             return CreateDefaultBookTable()
         elif self.book_action == "Create Book":
@@ -60,17 +115,22 @@ class CreateDefaultBookTable:
 
     Attributes:
     ------------
+    field_control: FieldControl
+        component holding primary_key field, other field names and associated types
     primary_key: string
-        name of primary key for default table generation as "id
+        name of primary key for default table generation
     int_list: string list
-        name of field (price) that would hold integers
+        name of field(s) that would hold integer(s)
     text_list: string list
-        name of fields(title and author) that would hold strings
+        name of field(s) that would hold string(s)
+    float_list: string list
+        name of field(s) that would hold float(s)
 
     Methods:
     ---------
     __init__(self):
-        define instance for single primary-key default book table
+        define instance for single primary-key default book table using component
+        FieldControl instance for field_names and types
 
     __str__(self):
         return string of class attributes for testing
@@ -78,14 +138,20 @@ class CreateDefaultBookTable:
 
     def __init__(self):
         """Create instance of books table with default field names"""
-        self.primary_key = "id"
-        self.int_list = ["quantity"]
-        self.text_list = ["title", "author"]
+        self.field_control = FieldControl()
+        # set name of primary key
+        self.primary_key = self.field_control.primary_key[0]
+        # iterate through 'int_list", 'text_list' and 'float_list' in field_control
+        # to instantiate current instance with field names
+        # tup(0) holds field_names, tup(1) holds datatype strings not needed by this class
+        self.int_list = [tup[0] for tup in self.field_control.int_list]
+        self.text_list = [tup[0] for tup in self.field_control.text_list]
+        self.float_list = [tup[0] for tup in self.field_control.float_list]
 
     def __str__(self):
         "return attributes of 'CreateDefaultBookTable' instance as string for testing"
         return (f"PK: {self.primary_key}, int_list names: {self.int_list}," +
-                f"test_list names: {self.text_list}")
+                f"test_list names: {self.text_list}, float_list names: {self.float_list}")
 
 
 class CreateBook:
@@ -147,7 +213,6 @@ class CreateBook:
         "return attributes of 'CreateBook' instance as string for testing"
         return f"title: {self.title}, author: {self.author}, quantity: {self.quantity}"
 
-
     def retrieve_string_value(self, input_message):
         """Request, retrieve and validate user input for a string (text) attribute and return value.
 
@@ -168,7 +233,6 @@ class CreateBook:
                 print("\nAn input was not recieved.")
             else:
                 return user_input
-
 
     def retrieve_numeric_value(self, data_type, input_message, error_message, value_range=None):
         """Rquest, retrieve, validate and return user_input for a numeric value.
@@ -270,28 +334,25 @@ class BookSearch:
     check_no_list_duplicates(self, int_list, text_list, float_list):
         Helper Function to check if list arguments contain any duplicated values between them
     """
-    # name(s) of field values to return in database book search. Default has been set to "*"
-    # to return all fields
-    fields_list = "*"
+    # name(s) of field values to return in database book search.
+    fields_list = None
     # field_names used to perform database book search
     where_fields_list = None
     # values corresponding to where_fields_list above
     search_values = None
-
 
     def __init__(self):
         """call 'search_book_single_field' method to request and validated user_input to populate
             class arguments 'where_fields_list' and 'search_values'. Return of None to constructor
             indicates incorrect arguments where given to 'search_book_single_field' method.
         """
+        # call 'search_book' with specified, set arguments
         self.search_book_single_field(["id", "quantity"], ["author"], [])
-
 
     def __str__(self):
         """return class instance variables values for testing."""
         return (f"fields_list: {self.fields_list}, where_fields_list: {self.where_fields_list} " +
                 f"search_vals = {self.search_values}")
-
 
     def search_book_single_field(self, int_list, text_list, float_list):
         """determine search criteria from user to perform a book(s) search. Method requests and
@@ -340,6 +401,10 @@ class BookSearch:
 
                 # Lists are valid
                 else:
+
+                    # set to return all fields as default
+                    self.fields_list = ["*"]
+
                     # store total number of options to perform search by
                     search_count = 0
                     # dictionary to store option number (key) and list (value) of field
@@ -449,7 +514,9 @@ class BookSearch:
         # anticipated to be small, checking complexity for all three lists has been left as 0(n^2)
         for i in range(0, len(combined_list) - 1):
             for j in range(i + 1, len(combined_list)):
+                # compare current (i) in list to next (j) to check for match
                 if combined_list[i] == combined_list[j]:
+                    # duplicate found
                     return False
 
         # no duplicates were found

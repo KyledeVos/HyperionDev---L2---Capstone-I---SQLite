@@ -574,7 +574,8 @@ class DeleteData(DataBaseQueryClass):
         for sqlite3 connection. Parent contructor attempts to create connection to database.
 
     execute(self):
-        Attempt to delete matching row and close database connection
+        Attempt to delete matching row and close database connection. Returns True or False
+        to confirm deletion of a row(s)
     """
 
     def __init__(self, database_name, table_name, primary_key, key_value):
@@ -605,7 +606,9 @@ class DeleteData(DataBaseQueryClass):
 
         Return:
         -----------
-        Only returns None if there was an error when attemting to connect to database
+        Returns None if there was an error when attemting to connect to database
+        Return True if the number of affected rows after deletion is greater than 0
+        Return False if number of affected rows is 0
 
         Exceptions:
         -----------
@@ -623,6 +626,11 @@ class DeleteData(DataBaseQueryClass):
             # convert received value for primary_key into tuple for query execution
             self.cursor.execute(query, (self.key_value,))
             self.connection.commit()
+            
+            # retrieve number of affected rows after deletion query has been executed
+            affected_rows = self.cursor.rowcount
+            # if at least one row was deleted, return True to confirm deletion
+            return True if affected_rows > 0  else False
 
         except sqlite3.OperationalError as operational_error:
             print(

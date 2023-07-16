@@ -198,6 +198,10 @@ class BookController:
             return BookSearch()
         elif self.book_action == "Update Book":
             return BookUpdate()
+        elif self.book_action == "Delete Book":
+            return BookDelete()
+        else:
+            print("Error Log - Invalid Book Action has been Entered for BookController")
 
 
 # -------------------------------------------------------------------------------------------------
@@ -673,10 +677,12 @@ class BookSearch:
                 print("\nPlease enter a valid number for your choice.")
 
 # -------------------------------------------------------------------------------------------------
+
+
 class BookUpdate:
     """Retrieve desired user field and associated value to perform update to field. Update is only
         performed using primary key for 'book' entity.
-        
+
         Attributes:
         -----------
         field_control: FieldControl
@@ -710,7 +716,7 @@ class BookUpdate:
         """Constructor to initialise field_control component controlling field names, types and 
         ranges (for numeric fields). Calls 'update_book_single_field()' method to retrieve and validate 
         user inputs used to set class attributes.
-        
+
         Attributes:
         -----------
         field_control: FieldControl
@@ -728,11 +734,9 @@ class BookUpdate:
         # call 'update_book_single_field() to initialise attributes with user inputs'
         self.update_book_single_field()
 
-
     def __str__(self):
         """Return attributes 'field_name' and 'update_tuple' values for testing."""
         return f"field_names_list: {self.field_names}, update_tuple: {self.update_tuple}"
-
 
     def update_book_single_field(self):
         """Method to request, retrieve and validate user_input for data to be used for a 'book'
@@ -898,3 +902,99 @@ class BookUpdate:
         # compulsory means of seach is by primary key only.
         # add primary key field_name to attribute 'field_names'
         self.field_names.append(self.field_control.primary_key[0])
+
+
+# -------------------------------------------------------------------------------------------------
+class BookDelete:
+    """Retrieve primary_key field name from field_controller, request and retrieve associated value
+        for primary_key matching data_type.
+
+        Attributes:
+        -----------
+        field_control: FieldControl
+            component holding primary_key field, other field names and associated types
+        primary_key_field: str
+            name of primary_key_field
+        primary_value: type controlled by FieldControl (int, string or float)
+            value for primary_key corresponding to desired row to be deleted
+
+        Methods:
+        --------
+        __init__(self):
+            initialise attributes of BookDelete instance
+
+        __str__(self):
+            testing method to print values in 'primary_key_field' and 'primary_value' attributes
+
+        retrieve_deletion_value(self):
+            request, retrieve and validate user_input for primary_key to perform row deletion
+            in a database
+
+        Exceptions:
+        -----------
+        Value_Error:
+            raised if user enters a primary_key value not correspoding to required
+            'int' or 'float' types
+        """
+
+    def __init__(self):
+        """Constructor to initialise BookDelete instance.
+
+        Attributes:
+        -----------
+        field_control: FieldControl
+            component holding primary_key field, other field names and associated types
+        primary_key_field: str
+            name of primary_key_field
+        primary_value: type controlled by FieldControl (int, string or float)
+            value for primary_key corresponding to desired row to be deleted
+        """
+        self.field_control = FieldControl()
+        # set primary_key field name defined by primary_key in FieldControl Class
+        self.primary_key_field = self.field_control.primary_key[0]
+        # retrieve user input value for primary key
+        self.primary_value = self.retrieve_deletion_value()
+
+    def __str__(self):
+        """Return values for primary key field and associated values for testing"""
+        return (f"primary_key field: {self.primary_key_field}, " +
+                f"primary_key_value: {self.primary_value}")
+
+    def retrieve_deletion_value(self):
+        """Request, retrieve and validate user_input for primary key for desired row (book)
+            to delete.
+
+        Return:
+        -------
+        primary_key value for row deletion (could be string, int or float)
+        """
+        # determine data_type for primary_key
+        primary_key_type = self.field_control.primary_key[1]
+
+        while True:
+            # request user_input value for primary key
+            user_input = input(
+                f"\nPlease enter the row {self.primary_key_field} for deletion: ")
+
+            # check for empty input
+            if user_input == "":
+                print("\nA value was not entered.")
+                continue
+
+            # check if primary_key type is Integer to validate
+            if primary_key_type == "int":
+                try:
+                    # return value to be used for deletion of row
+                    return int(user_input)
+                except ValueError:
+                    print("\nPlease Enter a valid, non-decimal number")
+                    continue
+
+            # check if primary_key type is Float to validate
+            if primary_key_type == "float":
+                try:
+                    # return value to be used for deletion of row
+                    return float(user_input)
+                except ValueError:
+                    print("\nPlease Enter a valid number")
+                    continue

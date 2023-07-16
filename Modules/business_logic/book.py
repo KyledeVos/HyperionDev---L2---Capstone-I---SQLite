@@ -73,13 +73,17 @@ class FieldControl():
     """
 
     def __init__(self):
-        """Constructor to set primary_key, field names, associated types and possible value range"""
+        """Constructor to set primary_key, field names, associated types and possible value range.
+            Tuples MUST have first two values as 'field_name' and 'data_type'. Integer and Float Lists
+            must have third and fourth values as min and max for range checks (use None if not applicable).
+        """
         self.primary_key = ("id", "int")
         # set int value of 'quantity' to have a lower, inclusive limit of zero and no preset upper limit.
-        self.int_list = [("quantity", 0, None, "int")]
+        self.int_list = [("quantity", "int", 0, None)]
         self.text_list = [("author", "text"), ("title", "text")]
-        self.float_list = []
+        self.float_list = [("price", "float", -1.3, 10)]
 
+        # attributes storing only the names of the fields (no other data as in tuples above)
         self.int_field_names = self.__return_field_names(self.int_list)
         self.text_field_names = self.__return_field_names(self.text_list)
         self.float_field_names = self.__return_field_names(self.float_list)
@@ -192,6 +196,8 @@ class BookController:
             return CreateBook()
         elif self.book_action == "Search Book":
             return BookSearch()
+        elif self.book_action == "Update Book":
+            return BookUpdate()
 
 
 # -------------------------------------------------------------------------------------------------
@@ -307,7 +313,7 @@ class CreateBook:
                                             ["Please enter a valid, non-decimal number.",
                                             "Value entered is smaller than allowed minimum",
                                              "Value entered exceeds allowed maximum"],
-                                            [int_field[1], int_field[2]]
+                                            [int_field[2], int_field[3]]
                                             ))
 
         # retrieve and validate float values from user according to field_names
@@ -320,7 +326,7 @@ class CreateBook:
                                             ["Please enter a valid number.",
                                             "Value entered is smaller than allowed minimum",
                                              "Value entered exceeds allowed maximum"],
-                                            [float_field[1], float_field[2]]
+                                            [float_field[2], float_field[3]]
                                             ))
 
     def __str__(self):
@@ -426,6 +432,10 @@ class CreateBook:
 class BookSearch:
     """Request and validate user_input to initialise class instance with field_names and search
         values corresponding to a book search.
+        NOTE: whilst the database query executions may still execute even with invalid data_types 
+              or values out of a given range, validation was added (here and in field_control) to
+              allow for potential restriction of search values adding to possible scalability of 
+              project.
 
     "Attributes:
     ------------
@@ -510,7 +520,6 @@ class BookSearch:
         values_recieved = False
         while True:
             try:
-
                 # set to return all fields as default
                 self.fields_list = ["*"]
 
@@ -585,23 +594,23 @@ class BookSearch:
                             # check value is integer and within allowed value range
                             try:
                                 # check if user_value is less than allowed minimum value
-                                if int_tup[1] is not None:
-                                    if int(user_value) < int_tup[1]:
+                                if int_tup[2] is not None:
+                                    if int(user_value) < int_tup[2]:
                                         print(
                                             "\nValue entered is below allowed minimum of: " +
-                                            f"{int_tup[1]}")
+                                            f"{int_tup[2]}")
                                         continue
                                 # check if user_value is above allowed maximim value
-                                if int_tup[2] is not None:
-                                    if int(user_value) > int_tup[2]:
+                                if int_tup[3] is not None:
+                                    if int(user_value) > int_tup[3]:
                                         print(
                                             "\nValue entered is above allowed maximum of: " +
-                                            f"{int_tup[2]}")
+                                            f"{int_tup[3]}")
                                         continue
 
                                 # if value_range was not set, attempt conversion to int to check
                                 # valid data type was entered
-                                if int_tup[1] is None and int_tup[2] is None:
+                                if int_tup[2] is None and int_tup[3] is None:
                                     int(user_value)
 
                             except ValueError:
@@ -624,23 +633,23 @@ class BookSearch:
                             # check value is valid float and within allowed value range
                             try:
                                 # check if user_value is less than allowed minimum value
-                                if float_tup[1] is not None:
-                                    if float(user_value) < float_tup[1]:
+                                if float_tup[2] is not None:
+                                    if float(user_value) < float_tup[2]:
                                         print(
                                             "\nValue entered is below allowed minimum of: " +
-                                            f"{float_tup[1]}")
+                                            f"{float_tup[2]}")
                                         continue
                                 # check if user_value is above allowed maximim value
-                                if float_tup[2] is not None:
-                                    if float(user_value) > float_tup[2]:
+                                if float_tup[3] is not None:
+                                    if float(user_value) > float_tup[3]:
                                         print(
                                             "\nValue entered is above allowed maximum of: " +
-                                            f"{float_tup[2]}")
+                                            f"{float_tup[3]}")
                                         continue
 
                                 # if value_range was not set, attempt conversion to float to check
                                 # valid data type was entered
-                                if float_tup[1] is None and float_tup[2] is None:
+                                if float_tup[2] is None and float_tup[3] is None:
                                     float(user_value)
 
                             except ValueError:
@@ -662,3 +671,230 @@ class BookSearch:
             # Exception caused by user entering option number that is not an integer
             except ValueError:
                 print("\nPlease enter a valid number for your choice.")
+
+# -------------------------------------------------------------------------------------------------
+class BookUpdate:
+    """Retrieve desired user field and associated value to perform update to field. Update is only
+        performed using primary key for 'book' entity.
+        
+        Attributes:
+        -----------
+        field_control: FieldControl
+            component holding primary_key field, other field names and associated types
+        field_names: string_list
+            holds (in order) name of field to be updated and name of primary_key field
+        update_tuple: tuple
+            holds (in order) new value for field to be updated and primary key value
+            where update should be performed
+
+        Methods:
+        --------
+        __init__(self):
+            initialise attributes of BookUpdate instance and call 'update_book_single_field()'
+            to retrieve and validate user_inputs for update
+
+        __str__(self):
+            testing method to print values in 'field_names' and 'update_tuple' attributes
+
+        update_book_single_field(self):
+            request, retrieve and validate user_input for desired field and value for update
+            of book entity
+
+        Exceptions:
+        -----------
+        Value_Error:
+            raised if user enters a value not correspoding to required 'int' or 'float' types
+        """
+
+    def __init__(self):
+        """Constructor to initialise field_control component controlling field names, types and 
+        ranges (for numeric fields). Calls 'update_book_single_field()' method to retrieve and validate 
+        user inputs used to set class attributes.
+        
+        Attributes:
+        -----------
+        field_control: FieldControl
+            component holding primary_key field, other field names and associated types
+        field_names: string_list
+            holds (in order) name of field to be updated and name of primary_key field
+        update_tuple: tuple
+            holds (in order) new value for field to be updated and primary key value
+            where update should be performed
+        """
+
+        self.field_control = FieldControl()
+        self.field_names = []
+        self.update_tuple = []
+        # call 'update_book_single_field() to initialise attributes with user inputs'
+        self.update_book_single_field()
+
+
+    def __str__(self):
+        """Return attributes 'field_name' and 'update_tuple' values for testing."""
+        return f"field_names_list: {self.field_names}, update_tuple: {self.update_tuple}"
+
+
+    def update_book_single_field(self):
+        """Method to request, retrieve and validate user_input for data to be used for a 'book'
+        entity update.
+        """
+
+        # retrieve data_type of primary key used for book update
+        primary_key_type = self.field_control.primary_key[1]
+
+        # Request and validate user_input for primary_key value used for book update
+        while True:
+            # request user_input for primary key
+            # field_control.primary_key[0] = field_name of primary key
+            primary_search_value = input("\nPlease enter the book " +
+                                         f"{self.field_control.primary_key[0]} for update: ")
+
+            # check for empty input
+            if primary_search_value == "":
+                print(
+                    f"\nA {self.field_control.primary_key[0]} was not entered.")
+                continue
+
+            # perform check for primary key as 'int' type
+            if primary_key_type == "int":
+                # attempt cast of user input for primary key to int:
+                try:
+                    int(primary_search_value)
+                except ValueError:
+                    print("\nPlease enter a valid, non-decimal number")
+                    continue
+
+            elif primary_key_type == "float":
+                # attempt cast of user input for primary_key to float:
+                try:
+                    float(primary_search_value)
+                except ValueError:
+                    print("\nPlease enter a valid number")
+                    continue
+
+            # at this point primary key is of valid type, end loop
+            break
+
+        # combine tuple lists in field_control into single list containing all tuples
+        fields_combined = []
+        fields_combined.extend(self.field_control.int_list)
+        fields_combined.extend(self.field_control.text_list)
+        fields_combined.extend(self.field_control.float_list)
+
+        # dictonary to hold all field_tuples
+        field_tuple_dict = {}
+
+        # add combined_list tuples into dictionary
+        for count, tuple_val in enumerate(fields_combined):
+            field_tuple_dict[count] = tuple_val
+
+        # Request and Validate user input for desired field whose value should be updated
+        while True:
+            try:
+                # hold total number of field options for range validation
+                total_options = 0
+
+                print(
+                    "\nPlease select an option for the book category you would like to update:")
+                # print field options to user to select from - for field to update
+                # for each tuple contained in the combined field_lists
+                for field_tuple in fields_combined:
+                    # print option number and field_name
+                    print(f"{total_options}: {field_tuple[0]}")
+                    total_options += 1
+                # request user_input option and validate as integer
+                user_option = int(input("Selected Option: "))
+
+                # check that user input is within range of total fields available
+                if user_option < 0 or user_option > total_options - 1:
+                    print(
+                        f"\nThere is no matching option for number: {user_option}")
+                    continue
+
+                # user has entered valid integer within range of options, end loop
+                break
+
+            except ValueError:
+                print("\nInvalid Option. Please enter a valid option number.")
+
+        # add selected field_from from user_option selection to 'field_names' attribute
+        self.field_names.append(field_tuple_dict[user_option][0])
+
+        # set data type for user chosen field to update
+        update_value_field = field_tuple_dict[user_option][1]
+
+        # request and retrieve user input for new value to be used for 'book' update
+        while True:
+            new_value = input(
+                f"\nEnter a new value for {self.field_names[0]}: ")
+
+            if new_value == "":
+                print("\nA new value was not entered")
+                continue
+
+            # perform check for 'int' data_type (if field is an Integer)
+            if update_value_field == "int":
+                try:
+                    # check value not below possible minimum allowed value
+                    if field_tuple_dict[user_option][2] is not None:
+                        if int(new_value) < field_tuple_dict[user_option][2]:
+                            print("\nValue entered is below allowed minimum of " +
+                                  f"{field_tuple_dict[user_option][2]}")
+                            continue
+
+                    # check value is not above possible allowed maximum
+                    if field_tuple_dict[user_option][3] is not None:
+                        if int(new_value) > field_tuple_dict[user_option][3]:
+                            print("\nValue entered is above allowed maximum of " +
+                                  f"{field_tuple_dict[user_option][3]}")
+                            continue
+
+                    # check value is an Integer if no value range was specified
+                    if field_tuple_dict[user_option][2] is None and \
+                            field_tuple_dict[user_option][3] is None:
+                        # cast input to int to confirm valid data_type
+                        int(new_value)
+
+                # error caused by user entering character or non-decimal number
+                except ValueError:
+                    print("\nPlease enter a valid, non-decimal number")
+                    continue
+
+            # perform check for 'float' data_type (if field is a Float)
+            if update_value_field == "float":
+                try:
+                    # check value not below possible minimum allowed value
+                    if field_tuple_dict[user_option][2] is not None:
+                        if float(new_value) < field_tuple_dict[user_option][2]:
+                            print("\nValue entered is below allowed minimum of " +
+                                  f"{field_tuple_dict[user_option][2]}")
+                            continue
+
+                    # check value is not above possible allowed maximum
+                    if field_tuple_dict[user_option][3] is not None:
+                        if float(new_value) > field_tuple_dict[user_option][3]:
+                            print("\nValue entered is above allowed maximum of " +
+                                  f"{field_tuple_dict[user_option][3]}")
+                            continue
+
+                    # check value is a Float if no value range was specified
+                    if field_tuple_dict[user_option][2] is None and \
+                            field_tuple_dict[user_option][3] is None:
+                        # cast input to int to confirm valid data_type
+                        float(new_value)
+
+                # error caused by user entering character
+                except ValueError:
+                    print("\nPlease enter a valid number")
+                    continue
+
+            # at this point, user has entered a valid value for update field, end loop
+            break
+
+        # add new value for update to attribute 'update_tuple'
+        self.update_tuple.append(new_value)
+        # add id number of book to be updated to attribute 'update_tuple'
+        self.update_tuple.append(primary_search_value)
+        # compulsory means of seach is by primary key only.
+        # add primary key field_name to attribute 'field_names'
+        self.field_names.append(self.field_control.primary_key[0])

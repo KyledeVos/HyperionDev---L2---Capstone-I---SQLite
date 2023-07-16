@@ -29,6 +29,7 @@ Float_Values
 Values within each category would be ordered sequentially
 """
 
+
 class FieldControl():
     """A component class used to set the names of fields and their types for any composite
     class. Changes to field names, numeric ranges, types and number of fields must be made
@@ -40,12 +41,14 @@ class FieldControl():
         contains a single-field primary key name and its associated type
     int_list: list of tuple
         list containing tuples ordered as:
-        field_name, lower range(inclusive), upper_range(inclusive), data_type as int
+        field_name, lower_range(inclusive), upper_range(inclusive), data_type as int
+        lower_range and uppper_range may be set as None (not empty)
     text_list: list of tuple
         list containing tuples of field names and their type as a text (String)
     float_list: list of tuple
         list containing tuples ordered as:
-        field_name, lower range(inclusive), upper_range(inclusive), data_type as float
+        field_name, lower_range(inclusive), upper_range(inclusive), data_type as float
+        lower_range and uppper_range may be set as None (not empty)
     int_field_names: string list
         list containing field_names populated from 'int_list'
     text_field_names: string list
@@ -94,14 +97,12 @@ class FieldControl():
         if not self.__no_duplicates_tuple_lists(self.int_list, self.text_list, self.float_list):
             print("Error Log - A duplicated field name has been stated.")
 
-
     def __str__(self):
         """return attributes of 'FieldControl' instance as string for testing"""
         return (f"PK: {self.primary_key}, Integer_List: {self.int_list}, " +
                 f"Text_List: {self.text_list}, Float_List: {self.float_list}, " +
                 f"int_fields: {self.int_field_names}, text_fields: {self.text_field_names}, " +
                 f"float_fields: {self.float_field_names}")
-    
 
     def __return_field_names(self, field_list):
         """Internal, Helper Function that may be called by another class to retrieve the names of
@@ -111,13 +112,12 @@ class FieldControl():
         -----------
         field_list: list of tuples
             list containing tuples that MUST confirm to tuple[0] = field_name as string
-        
+
         Return:
         ---------
         list containing the names of fields from 'field_list'
         """
         return [tup[0] for tup in field_list]
-
 
     def __no_duplicates_tuple_lists(self, *tuple_lists):
         """Internal, Helper Function validating there are no duplicated values in a list.
@@ -154,6 +154,8 @@ class FieldControl():
         return True
 
 # -------------------------------------------------------------------------------------------------
+
+
 class BookController:
     """Main class of Module used to determine which lower class instance to return
     based on 'book-action'
@@ -230,7 +232,6 @@ class CreateDefaultBookTable:
         self.text_list = self.field_control.text_field_names
         self.float_list = self.field_control.float_field_names
 
-
     def __str__(self):
         "return attributes of 'CreateDefaultBookTable' instance as string for testing"
         return (f"PK: {self.primary_key}, int_list names: {self.int_list}," +
@@ -284,40 +285,41 @@ class CreateBook:
         float_list_values: list of Float Values
             values corresponding to each field in field_control float_list
         """
-        self.fieldControl = FieldControl()
+        self.field_control = FieldControl()
         self.int_list_values = []
         self.text_list_values = []
         self.float_list_values = []
 
         # retrieve and validate string (text) values from user according to field
         # names in field_control for text_list:
-        for text_field in self.fieldControl.text_list:
+        for text_field in self.field_control.text_list:
             # text_field[0] = field_name
-            self.text_list_values.append(self.retrieve_string_value(text_field[0]))
+            self.text_list_values.append(
+                self.retrieve_string_value(text_field[0]))
 
         # retrieve and validate int values from user according to field_names
         # in field_control for int_list. Currently set to only accept values >= 0
-        for int_field in self.fieldControl.int_list:
+        for int_field in self.field_control.int_list:
             self.int_list_values.append(
                 # int_field[0] = field_name,
                 # int_field[1] = lower_range value, int_field[2] = upper_range value
                 self.retrieve_numeric_value("int", int_field[0],
                                             ["Please enter a valid, non-decimal number.",
                                             "Value entered is smaller than allowed minimum",
-                                            "Value entered exceeds allowed maximum"], 
+                                             "Value entered exceeds allowed maximum"],
                                             [int_field[1], int_field[2]]
                                             ))
 
         # retrieve and validate float values from user according to field_names
         # in field_control for float_list.
-        for float_field in self.fieldControl.float_list:
+        for float_field in self.field_control.float_list:
             self.float_list_values.append(
                 # float_field[0] = field_name,
                 # float_field[1] = lower_range value, float_field[2] = upper_range value
                 self.retrieve_numeric_value("float", float_field[0],
                                             ["Please enter a valid number.",
                                             "Value entered is smaller than allowed minimum",
-                                            "Value entered exceeds allowed maximum"], 
+                                             "Value entered exceeds allowed maximum"],
                                             [float_field[1], float_field[2]]
                                             ))
 
@@ -325,7 +327,6 @@ class CreateBook:
         "return list attributes of 'CreateBook' instance as string for testing"
         return (f"int_fields: {self.int_list_values}, text_values: {self.text_list_values}, " +
                 f"float_values: {self.float_list_values}")
-
 
     def retrieve_string_value(self, input_field):
         """Request, retrieve and validate user input for a string (text) attribute and return value.
@@ -348,7 +349,7 @@ class CreateBook:
             else:
                 return user_input
 
-    def retrieve_numeric_value(self, data_type, input_field, error_message, value_range = None):
+    def retrieve_numeric_value(self, data_type, input_field, error_message, value_range=None):
         """Rquest, retrieve, validate and return user_input for a numeric value.
 
         Arguments:
@@ -388,9 +389,11 @@ class CreateBook:
                 # print message to user and cast to desired numeric data_type, throws
                 # ValueError if incorrect type is not received.
                 if data_type == "int":
-                    numeric_value = int(input(f"\nPlease enter the book's {input_field}: "))
+                    numeric_value = int(
+                        input(f"\nPlease enter the book's {input_field}: "))
                 elif data_type == "float":
-                    numeric_value = float(input(f"\nPlease enter the book's {input_field}: "))
+                    numeric_value = float(
+                        input(f"\nPlease enter the book's {input_field}: "))
                 else:
                     # function has been called with a value not capable of handling
                     print(
@@ -465,10 +468,7 @@ class BookSearch:
             indicates incorrect arguments where given to 'search_book_single_field' method.
         """
         self.field_control = FieldControl()
-        # call 'search_book' with int, text and float lists from field_control
-
-        # populate attribute lists with field_names
-
+        # call 'search_book' with int, text and float field_names list from field_control
         self.search_book_single_field(self.field_control.int_list, self.field_control.text_list,
                                       self.field_control.float_list)
 
@@ -510,102 +510,155 @@ class BookSearch:
         values_recieved = False
         while True:
             try:
-                # Perform Initial Validation of arguments lists:
-                # Check function call has been made with at least one populated list
-                if len(text_list) == 0 and len(int_list) == 0 and len(float_list) == 0:
-                    print("\nError Log - At least one field has to be populated")
-                    return None
 
-                # Lists are valid
-                else:
+                # set to return all fields as default
+                self.fields_list = ["*"]
 
-                    # set to return all fields as default
-                    self.fields_list = ["*"]
+                # store total number of options to perform search by
+                search_count = 0
+                # dictionary to store option number (key) and list (value) of field
+                # name and origin list
+                search_option_field = {}
 
-                    # store total number of options to perform search by
-                    search_count = 0
-                    # dictionary to store option number (key) and list (value) of field
-                    # name and origin list
-                    search_option_field = {}
+                # print field_names as options to user to perform search
+                print(
+                    "\nEnter the number option below for how you want to perform search")
+                # move through each list to print options together
+                for count, field_name in enumerate(self.field_control.int_field_names +
+                                                   self.field_control.text_field_names +
+                                                   self.field_control.float_field_names):
+                    # print option number and field_name to user
+                    print(f"{count} : {field_name}")
 
-                    # print field_names as options to user to perform search
-                    print(
-                        "\nEnter the number option below for how you want to perform search")
-                    # move through each list to print options together
-                    for count, field_name in enumerate(int_list + text_list + float_list):
-                        # print option number and field_name to user
-                        print(f"{count} : {field_name}")
-
-                        # determine list current field belongs to
-                        if len(int_list) != 0 and count <= len(int_list) - 1:
-                            search_option_field[count] = [
-                                field_name, "int_list"]
-                        # add length of previous int_list to account for total options summed
-                        # together for all three lists
-                        elif len(text_list) != 0 and count <= ((len(text_list) + len(int_list))-1):
-                            search_option_field[count] = [
-                                field_name, "text_list"]
-                        # field not in int-list or text_list so must be in float_list
-                        else:
-                            search_option_field[count] = [
-                                field_name, "float_list"]
-
-                        # track total number of options given to user for validation below
-                        search_count = count
-
-                    # request input and attempt cast to int. Throws ValueError for character,
-                    # empty input or invalid integer number
-                    option_input = int(input("\nOption: "))
-
-                    # check recieved int input is in range of options
-                    if option_input < 0 or option_input > search_count:
-                        print(
-                            "\nInvalid. Please enter an option number within range of options")
+                    # determine list current field belongs to
+                    if len(int_list) != 0 and count <= len(int_list) - 1:
+                        search_option_field[count] = [
+                            field_name, "int_list"]
+                    # add length of previous int_list to account for total options summed
+                    # together for all three lists
+                    elif len(text_list) != 0 and count <= ((len(text_list) + len(int_list))-1):
+                        search_option_field[count] = [
+                            field_name, "text_list"]
+                    # field not in int-list or text_list so must be in float_list
                     else:
-                        # set name of field in a database to be used for search
-                        self.where_fields_list = [
-                            search_option_field[option_input][0]]
+                        search_option_field[count] = [
+                            field_name, "float_list"]
 
-                        # Request and validate user_input value for selected field above
-                        # first list value in dict 'seach_option_value' holds field name
-                        while True:
-                            user_value = input("\nEnter a value for the book(s) " +
-                                               f"{search_option_field[option_input][0]}: ")
-                            # check for empty input
-                            if user_value == "":
-                                print("\nA value was not recieved")
+                    # track total number of options given to user for validation below
+                    search_count = count
+
+                # request input and attempt cast to int. Throws ValueError for character,
+                # empty input or invalid integer number
+                option_input = int(input("\nOption: "))
+
+                # check recieved int input is in range of options
+                if option_input < 0 or option_input > search_count:
+                    print(
+                        "\nInvalid. Please enter an option number within range of options")
+                else:
+                    # set name of field in a database to be used for search
+                    self.where_fields_list = [
+                        search_option_field[option_input][0]]
+
+                    # Request and validate user_input value for selected field above
+                    # first list value in dict 'seach_option_value' holds field name
+                    while True:
+                        user_value = input("\nEnter a value for the book(s) " +
+                                           f"{search_option_field[option_input][0]}: ")
+                        # check for empty input
+                        if user_value == "":
+                            print("\nA value was not recieved")
+                            continue
+
+                        # perform check for correct type if field corresponds to an Integer
+                        # (second value in list for dict 'search_option_value')
+                        if search_option_field[option_input][1] == "int_list":
+                            # store matching int tuple containing possible allowed value rangeS
+                            int_tup = ()
+                            # Retrieve possible allowed value range from field_control,
+                            # by iterating through all tuples trying to match field names
+                            for tup in self.field_control.int_list:
+                                # tup[0] = field_name
+                                if search_option_field[option_input][0] == tup[0]:
+                                    int_tup = tup
+
+                            # check value is integer and within allowed value range
+                            try:
+                                # check if user_value is less than allowed minimum value
+                                if int_tup[1] is not None:
+                                    if int(user_value) < int_tup[1]:
+                                        print(
+                                            "\nValue entered is below allowed minimum of: " +
+                                            f"{int_tup[1]}")
+                                        continue
+                                # check if user_value is above allowed maximim value
+                                if int_tup[2] is not None:
+                                    if int(user_value) > int_tup[2]:
+                                        print(
+                                            "\nValue entered is above allowed maximum of: " +
+                                            f"{int_tup[2]}")
+                                        continue
+
+                                # if value_range was not set, attempt conversion to int to check
+                                # valid data type was entered
+                                if int_tup[1] is None and int_tup[2] is None:
+                                    int(user_value)
+
+                            except ValueError:
+                                print(
+                                    "\nInvalid. Please enter a valid, non-decimal number")
                                 continue
 
-                            # perform check for correct type if field corresponds to an
-                            # Integer or float (second value in list for dict 'search_option_value')
-                            if search_option_field[option_input][1] == "int_list":
-                                # check for an Integer Value
-                                try:
-                                    int(user_value)
-                                except ValueError:
-                                    print(
-                                        "\nInvalid. Please enter a valid, non-decimal number")
-                                    continue
-                            elif search_option_field[option_input][1] == "float_list":
-                                try:
-                                    float(user_value)
-                                except ValueError:
-                                    print(
-                                        "\nInvalid. Please enter a valid, numeric value")
-                                    continue
+                        # perform check for correct type if field corresponds to an Float
+                        # (second value in list for dict 'search_option_value')
+                        elif search_option_field[option_input][1] == "float_list":
+                            # store matching float tuple containing possible allowed value rangeS
+                            float_tup = ()
+                            # Retrieve possible allowed value range from field_control,
+                            # by iterating through all tuples trying to match field names
+                            for tup in self.field_control.float_list:
+                                # tup[0] = field_name
+                                if search_option_field[option_input][0] == tup[0]:
+                                    float_tup = tup
 
-                            # at this point, value has been recieved and validated from user
-                            self.search_values = [user_value]
-                            # terminate main_loop
-                            values_recieved = True
-                            break
+                            # check value is valid float and within allowed value range
+                            try:
+                                # check if user_value is less than allowed minimum value
+                                if float_tup[1] is not None:
+                                    if float(user_value) < float_tup[1]:
+                                        print(
+                                            "\nValue entered is below allowed minimum of: " +
+                                            f"{float_tup[1]}")
+                                        continue
+                                # check if user_value is above allowed maximim value
+                                if float_tup[2] is not None:
+                                    if float(user_value) > float_tup[2]:
+                                        print(
+                                            "\nValue entered is above allowed maximum of: " +
+                                            f"{float_tup[2]}")
+                                        continue
+
+                                # if value_range was not set, attempt conversion to float to check
+                                # valid data type was entered
+                                if float_tup[1] is None and float_tup[2] is None:
+                                    float(user_value)
+
+                            except ValueError:
+                                print(
+                                    "\nInvalid. Please enter a valid number")
+                                continue
+
+                        # at this point, value has been recieved and validated from user
+                        self.search_values = [user_value]
+                        # terminate main_loop
+                        values_recieved = True
+                        break
 
                 # check if 'where_fields_list' and 'search_vals' have been populated
                 # to end main loop
                 if values_recieved is True:
                     break
 
+            # Exception caused by user entering option number that is not an integer
             except ValueError:
                 print("\nPlease enter a valid number for your choice.")
-
-

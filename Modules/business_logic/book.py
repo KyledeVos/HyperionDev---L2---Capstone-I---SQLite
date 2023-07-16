@@ -85,6 +85,21 @@ class FieldControl():
         """return attributes of 'FieldControl' instance as string for testing"""
         return (f"PK: {self.primary_key}, Integer_List: {self.int_list}, " +
                 f"Text_List: {self.text_list}, Float_List: {self.float_list}")
+    
+    def return_field_names(self, field_list):
+        """Helper Function that may be called by another class to retrieve the names of
+            fields contained with class atrribute lists of tuples
+
+        Keyword Arguments:
+        -----------
+        field_list: list of tuples
+            list containing tuples that MUST confirm to tuple[0] = field_name as string
+        
+        Return:
+        ---------
+        list containing the names of fields from 'field_list'
+        """
+        return [tup[0] for tup in field_list]
 
 
     def no_duplicates_tuple_lists(self, *tuple_lists):
@@ -331,7 +346,7 @@ class CreateBook:
             range as defined by 'value_range' with current order as:
                 [0] - message for value_error (incorrect type)
                 [1] - message for value lower than minimum (optional if lower min not specified)
-                [2] - message for exceeding max value (optional is max not specified)
+                [2] - message for exceeding max value (optional if max not specified)
         value_range: int or float list: default = None
             list to specify min [0] or max [1] allowed user_input. Values are inclusive for range.
             Values must be defined to correct datatype being requested.
@@ -395,6 +410,8 @@ class BookSearch:
 
     "Attributes:
     ------------
+    field_control: FieldControl
+        component holding primary_key field, other field names and associated types
     fields_list: string list (default = "*" for all fields)
         list containing field name values to return for search
     where_fields_list: string list
@@ -406,7 +423,7 @@ class BookSearch:
     --------
     __init__(self):
         Constructor used to create class instance with attributes retrieved from user, using
-        class method 'search_book' to  retrieve and set class instance attributes
+        class method 'search_book' to retrieve and set class instance attributes
 
     __str__(self):
         return string containing values for class attributes for testing
@@ -431,8 +448,13 @@ class BookSearch:
             class arguments 'where_fields_list' and 'search_values'. Return of None to constructor
             indicates incorrect arguments where given to 'search_book_single_field' method.
         """
-        # call 'search_book' with specified, set arguments
-        self.search_book_single_field(["id", "quantity"], ["author"], [])
+        self.field_control = FieldControl()
+        # call 'search_book' with int, text and float lists from field_control
+
+        # populate attribute lists with field_names
+
+        self.search_book_single_field(self.field_control.int_list, self.field_control.text_list,
+                                      self.field_control.float_list)
 
     def __str__(self):
         """return class instance variables values for testing."""
@@ -445,7 +467,7 @@ class BookSearch:
 
         Keyword Arguments:
         ------------------
-        int_list: string list (can be empty)
+        int_list: list (can be empty)
             names of fields corresponding to Integer values in a database
         text_list: string list (can be empty)
             names of fields corresponding to string (Text) values in a database
@@ -473,15 +495,9 @@ class BookSearch:
         while True:
             try:
                 # Perform Initial Validation of arguments lists:
-                # 1) Check function call has been made with at least one populated list
+                # Check function call has been made with at least one populated list
                 if len(text_list) == 0 and len(int_list) == 0 and len(float_list) == 0:
                     print("\nError Log - At least one field has to be populated")
-                    return None
-
-                # 2) Confirm there are no duplicated values (field names) in any of the lists
-                elif self.check_no_list_duplicates(int_list, text_list, float_list) is False:
-                    print(
-                        "/Error Log - There is a duplicated field name in one the lists")
                     return None
 
                 # Lists are valid
@@ -576,33 +592,4 @@ class BookSearch:
             except ValueError:
                 print("\nPlease enter a valid number for your choice.")
 
-    def check_no_list_duplicates(self, int_list, text_list, float_list):
-        """Helper Function validating there are no duplicated values between or in
-            the three lists. Lists may be empty.
 
-        Keyword Arguments:
-        ------------------
-        int_list: list of strings
-            names of fields that would hold integer values
-        text_list: list of strings
-            names of fields that would hold text (string) values
-        float_list: list of strings
-            names of fields that would hold real (float) values
-
-        Return:
-        -------
-        True for no duplicates, False if duplicate value (field_name) is found
-        """
-        # combine all lists into single list
-        combined_list = int_list + text_list + float_list
-        # Perform check within combined list to check for any duplicates. As lists are
-        # anticipated to be small, checking complexity for all three lists has been left as 0(n^2)
-        for i in range(0, len(combined_list) - 1):
-            for j in range(i + 1, len(combined_list)):
-                # compare current (i) in list to next (j) to check for match
-                if combined_list[i] == combined_list[j]:
-                    # duplicate found
-                    return False
-
-        # no duplicates were found
-        return True

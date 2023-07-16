@@ -19,50 +19,66 @@ retrieval. Imports and use of this module MUST be done as:
 NOTE: Database logic and queries are not handled by classes within this module. All
 classes return a populated instance to calling method or None. Database and table names as well
 as primary_key increments and tracking are not handled in this module
-"""
 
+The order of Fields (which should be extended to the Database by any class utilising this module) is:
+Primary_Key
+Integer_Values
+Text_Values
+Float_Values
+
+Values within each category would be ordered sequentially
+"""
 
 class FieldControl():
     """A component class used to set the names of fields and their types for any composite
-    class. Changes to field names, types and number of fields must be made in this class.
+    class. Changes to field names, numeric ranges, types and number of fields must be made
+    in this class.
 
     Attributes:
     -----------
     primary_key: list of tuple
         contains a single-field primary key name and its associated type
     int_list: list of tuple
-        list containing tuples of field names and their type as an Integer
+        list containing tuples ordered as:
+        field_name, lower range(inclusive), upper_range(inclusive), data_type as int
     text_list: list of tuple
         list containing tuples of field names and their type as a text (String)
-    text_list: list of tuple
-        list containing tuples of field names and their type as a float (Real)
+    float_list: list of tuple
+        list containing tuples ordered as:
+        field_name, lower range(inclusive), upper_range(inclusive), data_type as float
 
-    Method:
+    Methods:
     -------
     __init__(self):
         used to initialise component and set primary_key, field names and their associated types
 
     __str__(self):
         print all declared field_names and types for testing
+
+    check_no_list_duplicates(self, check_list):
+        helper method to check for any duplicates in field names
     """
 
     def __init__(self):
-        """Constructor to set primary_key, field names and their associated types"""
+        """Constructor to set primary_key, field names, associated types and possible value range"""
         self.primary_key = ("id", "int")
-        self.int_list = [("quantity", "int")]
+        # set int value of 'quantity' to have a lower, inclusive limit of zero and no preset upper limit.
+        self.int_list = [("quantity", 0, None, "int")]
         self.text_list = [("author", "text"), ("title", "text")]
         self.float_list = []
 
         # perform check that primary_key field has been stated
         if not self.primary_key:
             print("Error Log - A Primary Key has not been stated for 'Book' Entity")
-            return None
 
         # perform check that at least one list has been populated
         if not self.int_list and not self.text_list and not self.float_list:
             print(
-                "Error Log -At least one additional field has been stated for 'Book' Entity")
-            return None
+                "Error Log - At least one additional field has not been stated for 'Book' Entity")
+
+        # perform check that field names in and between each list is unique
+        if not self.no_duplicates_tuple_lists(self.int_list, self.text_list, self.float_list):
+            print("Error Log - A duplicated field name has been stated.")
 
 
     def __str__(self):
@@ -71,6 +87,41 @@ class FieldControl():
                 f"Text_List: {self.text_list}, Float_List: {self.float_list}")
 
 
+    def no_duplicates_tuple_lists(self, *tuple_lists):
+        """Helper Function validating there are no duplicated values in a list.
+
+        Keyword Arguments:
+        ------------------
+        tuple_lists: varying number of lists containing tuples
+            list(s) containing values to be checked for any duplicates
+            Tuples must correspond to at least one value with first value to be checked
+
+        Return:
+        -------
+        True for no duplicates, False if duplicate value (field_name) is found
+        """
+        # list to contain combined, first_values in tuple
+        combined_list = []
+        # combine tuple_lists into list containing only first value in each tuple
+        # data_list = each list of tuples in method arguments, tup = tuples contained in each list
+        for data_list in tuple_lists:
+            for tup in data_list:
+                combined_list.append(tup[0])
+
+        # Perform check within combined list to check for any duplicates. As implementation
+        # is anticiplated for be used for field lists with an assumed small count, complexity
+        # has been left as 0(n^2)
+        for i in range(0, len(combined_list) - 1):
+            for j in range(i + 1, len(combined_list)):
+                # compare current (i) in list to next (j) to check for match
+                if combined_list[i] == combined_list[j]:
+                    # duplicate found
+                    return False
+
+        # no duplicates were found
+        return True
+
+# -------------------------------------------------------------------------------------------------
 class BookController:
     """Main class of Module used to determine which lower class instance to return
     based on 'book-action'
@@ -109,6 +160,7 @@ class BookController:
             return BookSearch()
 
 
+# -------------------------------------------------------------------------------------------------
 class CreateDefaultBookTable:
     """Define instance default field values for 'books' table using single Primary Key
         field.
@@ -142,11 +194,11 @@ class CreateDefaultBookTable:
         # set name of primary key
         self.primary_key = self.field_control.primary_key[0]
         # iterate through 'int_list", 'text_list' and 'float_list' in field_control
-        # to instantiate current instance with field names
-        # tup(0) holds field_names, tup(1) holds datatype strings not needed by this class
+        # to instantiate current instance with field names tup(0)
         self.int_list = [tup[0] for tup in self.field_control.int_list]
         self.text_list = [tup[0] for tup in self.field_control.text_list]
         self.float_list = [tup[0] for tup in self.field_control.float_list]
+
 
     def __str__(self):
         "return attributes of 'CreateDefaultBookTable' instance as string for testing"
@@ -154,12 +206,15 @@ class CreateDefaultBookTable:
                 f"test_list names: {self.text_list}, float_list names: {self.float_list}")
 
 
+# -------------------------------------------------------------------------------------------------
 class CreateBook:
     """Request and Validate User Input to create a 'Book' Object. 'id'
     for primary key in books table is not handled or added here.
 
     Attributes:
     ------------
+    field_control: FieldControl
+        component holding primary_key field, other field names and associated types
     title: string
         name of book
     Author: string
@@ -185,41 +240,69 @@ class CreateBook:
 
     def __init__(self):
         """Use class method calls (and their parameters) to request, retrieve and validate user
-            input used to instantiate a new 'book' object
+            input used to instantiate a new 'CreateBook' object
 
-        Arguments:
+        Attributes:
         -----------
-        title: string
-            name of book
-        Author: string
-            name of book author(s)
-        quantity: int
-            number of book copies currently in stock
-            """
-        self.title = self.retrieve_string_value("Enter the Book Title")
-        self.author = self.retrieve_string_value(
-            "Enter the Author(s) of the Book")
-        # parameters set as 'datatype' - Integer, 'message to user', list of error messages for
-        # missing input, incorrect value-type entered or value out of 'value-range',
-        # value_range- list containing a minimum of zero with no max value
-        self.quantity = self.retrieve_numeric_value("Integer",
-                                                    "Enter the number of copies in stock",
-                                                    ["Please enter a valid, non-decimal stock number.",
-                                                     "Value entered is smaller than allowed minimum",
-                                                     "Value entered exceeds allowed maximum"],
-                                                    [0])
+        field_control: FieldControl
+            component holding primary_key field, other field names and associated types
+        int_list_values: list of Integer Values
+            values corresponding to each field in field_control int_list
+        text_list_values: list of String Values
+            values corresponding to each field in field_control text_list
+        float_list_values: list of Float Values
+            values corresponding to each field in field_control float_list
+        """
+        self.fieldControl = FieldControl()
+        self.int_list_values = []
+        self.text_list_values = []
+        self.float_list_values = []
+
+        # retrieve and validate string (text) values from user according to field
+        # names in field_control for text_list:
+        for text_field in self.fieldControl.text_list:
+            # text_field[0] = field_name
+            self.text_list_values.append(self.retrieve_string_value(text_field[0]))
+
+        # retrieve and validate int values from user according to field_names
+        # in field_control for int_list. Currently set to only accept values >= 0
+        for int_field in self.fieldControl.int_list:
+            self.int_list_values.append(
+                # int_field[0] = field_name,
+                # int_field[1] = lower_range value, int_field[2] = upper_range value
+                self.retrieve_numeric_value("int", int_field[0],
+                                            ["Please enter a valid, non-decimal number.",
+                                            "Value entered is smaller than allowed minimum",
+                                            "Value entered exceeds allowed maximum"], 
+                                            [int_field[1], int_field[2]]
+                                            ))
+
+        # retrieve and validate float values from user according to field_names
+        # in field_control for float_list.
+        for float_field in self.fieldControl.float_list:
+            self.float_list_values.append(
+                # float_field[0] = field_name,
+                # float_field[1] = lower_range value, float_field[2] = upper_range value
+                self.retrieve_numeric_value("float", float_field[0],
+                                            ["Please enter a valid number.",
+                                            "Value entered is smaller than allowed minimum",
+                                            "Value entered exceeds allowed maximum"], 
+                                            [float_field[1], float_field[2]]
+                                            ))
 
     def __str__(self):
-        "return attributes of 'CreateBook' instance as string for testing"
-        return f"title: {self.title}, author: {self.author}, quantity: {self.quantity}"
+        "return list attributes of 'CreateBook' instance as string for testing"
+        return (f"int_fields: {self.int_list_values}, text_values: {self.text_list_values}, " +
+                f"float_values: {self.float_list_values}")
 
-    def retrieve_string_value(self, input_message):
+
+    def retrieve_string_value(self, input_field):
         """Request, retrieve and validate user input for a string (text) attribute and return value.
 
         Arguments:
         ----------
-        input_message: string
-            message to display to user for input request
+        input_field: string
+            name of field for which a value is being requested
 
         Return: 
         ----------
@@ -227,22 +310,22 @@ class CreateBook:
             retrived user input that is non-empty
         """
         while True:
-            user_input = input(f"\n{input_message}: ")
+            user_input = input(f"\nEnter the book's {input_field}: ")
             # check input was not empty
             if user_input == "":
                 print("\nAn input was not recieved.")
             else:
                 return user_input
 
-    def retrieve_numeric_value(self, data_type, input_message, error_message, value_range=None):
+    def retrieve_numeric_value(self, data_type, input_field, error_message, value_range = None):
         """Rquest, retrieve, validate and return user_input for a numeric value.
 
         Arguments:
         -----------
         data_type: string
             desired input type currently allowing only "Integer" and "Float"
-        input_message: string
-            message to display to user to request numeric input
+        input_field: string
+            name of field that would hold a numeric value currently being requested
         error_message: string list
             strings to display to user for value_error (incorrect type given) or value out of
             range as defined by 'value_range' with current order as:
@@ -273,10 +356,10 @@ class CreateBook:
             try:
                 # print message to user and cast to desired numeric data_type, throws
                 # ValueError if incorrect type is not received.
-                if data_type == "Integer":
-                    numeric_value = int(input(f"\n{input_message}: "))
-                elif data_type == "Float":
-                    numeric_value = float(input(f"\n{input_message}: "))
+                if data_type == "int":
+                    numeric_value = int(input(f"\nPlease enter the book's {input_field}: "))
+                elif data_type == "float":
+                    numeric_value = float(input(f"\nPlease enter the book's {input_field}: "))
                 else:
                     # function has been called with a value not capable of handling
                     print(
@@ -289,11 +372,12 @@ class CreateBook:
                 # check if range was specified
                 if value_range is not None:
                     # perform minimum value check
-                    if numeric_value < value_range[0]:
-                        print(f"\n{error_message[1]}")
-                        continue
+                    if value_range[0] is not None:
+                        if numeric_value < value_range[0]:
+                            print(f"\n{error_message[1]}")
+                            continue
                     # perform maximum value check (if supplied in function call)
-                    if len(value_range) == 2:
+                    if value_range[1] is not None:
                         if numeric_value > value_range[1]:
                             print(f"\n{error_message[2]}")
                             continue
@@ -304,6 +388,7 @@ class CreateBook:
                 print(f"\n{error_message[0]}")
 
 
+# -------------------------------------------------------------------------------------------------
 class BookSearch:
     """Request and validate user_input to initialise class instance with field_names and search
         values corresponding to a book search.

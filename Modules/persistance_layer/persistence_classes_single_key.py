@@ -59,7 +59,6 @@ class DatabaseController():
         self.connection = None
         self.cursor = None
 
-
     def open_connection_and_create_cursor(self):
         """Attempt to create connection to specified database and return a cursor object.
 
@@ -85,7 +84,6 @@ class DatabaseController():
             print(operation_error)
             return None
 
-
     def close_connection(self):
         """Complusory Function used to close connection to database. All classes utilising this
            class must ensure this function is called.
@@ -102,6 +100,7 @@ class DatabaseController():
             print(data_error)
 
 
+# -------------------------------------------------------------------------------------------------
 class DataBaseQueryClass():
     """super class defining methods to initialize database access object
         and execution of query to database.
@@ -157,7 +156,6 @@ class DataBaseQueryClass():
         self.connection = None
         self.cursor = None
 
-
     def execute(self):
         """Method to be overridden. Defines logic for creation of query
             and execution against a database"""
@@ -172,6 +170,7 @@ class DataBaseQueryClass():
             self.connection = self.database_controller.connection
 
 
+# -------------------------------------------------------------------------------------------------
 class CreateTableSingleKey(DataBaseQueryClass):
     """Child class allowing for creation of a new table in a Database using SQLite3 with a
         non-compound Primary-Key. Fields are all set as "NOT NULL".
@@ -221,7 +220,6 @@ class CreateTableSingleKey(DataBaseQueryClass):
         # attempt to make connection to database (through super class)
         # successful creation will initialise 'cursor' and 'connection' objects
         self.create_database_connection()
-
 
     def execute(self):
         """Create SQL query comprised of desired table fields and execute
@@ -278,6 +276,7 @@ class CreateTableSingleKey(DataBaseQueryClass):
             self.database_controller.close_connection()
 
 
+# -------------------------------------------------------------------------------------------------
 class InsertData(DataBaseQueryClass):
     """Allows for insertion of single or multiple rows to table in database".
 
@@ -317,7 +316,6 @@ class InsertData(DataBaseQueryClass):
         # attempt to make connection to database (through super class)
         # successful creation will initialise 'cursor' and 'connection' objects
         self.create_database_connection()
-
 
     def execute(self):
         """Connect to database, create SQL query to insert new row(s) into existing table and
@@ -371,6 +369,7 @@ class InsertData(DataBaseQueryClass):
             self.database_controller.close_connection()
 
 
+# -------------------------------------------------------------------------------------------------
 class ReadData(DataBaseQueryClass):
     """Allows for reading of desired values from table using multiple fields to
         perform check of matching attributes. Returns matching row(s)".
@@ -418,7 +417,6 @@ class ReadData(DataBaseQueryClass):
         # attempt to make connection to database (through super class)
         # successful creation will initialise 'cursor' and 'connection' objects
         self.create_database_connection()
-
 
     def execute(self):
         """Create SQL query to read row from table based on desired fields and values.
@@ -478,6 +476,7 @@ class ReadData(DataBaseQueryClass):
             self.database_controller.close_connection()
 
 
+# -------------------------------------------------------------------------------------------------
 class UpdateData(DataBaseQueryClass):
     """Modify a single field value for row in database".
 
@@ -514,12 +513,11 @@ class UpdateData(DataBaseQueryClass):
             contains new_value to assign, old value for row determination
         """
         super().__init__(database_name, table_name)
-        self.field_names = field_names 
+        self.field_names = field_names
         self.update_tuple = update_tuple
         # attempt to make connection to database (through super class)
         # successful creation will initialise 'cursor' and 'connection' objects
         self.create_database_connection()
-
 
     def execute(self):
         """Create and execute SQL query to update one value in row. Close Database Connection.
@@ -546,6 +544,11 @@ class UpdateData(DataBaseQueryClass):
             self.cursor.execute(query, self.update_tuple)
             self.connection.commit()
 
+            # retrieve number of affected rows after deletion query has been executed
+            affected_rows = self.cursor.rowcount
+            # if at least one row was deleted, return True to confirm deletion
+            return True if affected_rows > 0 else False
+
         except sqlite3.OperationalError as update_error:
             print(
                 f"An error has occured trying update data in {self.table_name}")
@@ -557,6 +560,7 @@ class UpdateData(DataBaseQueryClass):
             self.database_controller.close_connection()
 
 
+# -------------------------------------------------------------------------------------------------
 class DeleteData(DataBaseQueryClass):
     """Delete a single value row in database".
 
@@ -600,7 +604,6 @@ class DeleteData(DataBaseQueryClass):
         # successful creation will initialise 'cursor' and 'connection' objects
         self.create_database_connection()
 
-
     def execute(self):
         """Connect to database, create SQL query to delete one row. Close Database Connection.
 
@@ -626,11 +629,11 @@ class DeleteData(DataBaseQueryClass):
             # convert received value for primary_key into tuple for query execution
             self.cursor.execute(query, (self.key_value,))
             self.connection.commit()
-            
+
             # retrieve number of affected rows after deletion query has been executed
             affected_rows = self.cursor.rowcount
             # if at least one row was deleted, return True to confirm deletion
-            return True if affected_rows > 0  else False
+            return True if affected_rows > 0 else False
 
         except sqlite3.OperationalError as operational_error:
             print(

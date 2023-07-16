@@ -46,6 +46,12 @@ class FieldControl():
     float_list: list of tuple
         list containing tuples ordered as:
         field_name, lower range(inclusive), upper_range(inclusive), data_type as float
+    int_field_names: string list
+        list containing field_names populated from 'int_list'
+    text_field_names: string list
+        list containing field_names populated from 'text_list'
+    float_field_names: string list
+        list containing field_names populated from 'float_list'
 
     Methods:
     -------
@@ -55,8 +61,12 @@ class FieldControl():
     __str__(self):
         print all declared field_names and types for testing
 
-    check_no_list_duplicates(self, check_list):
-        helper method to check for any duplicates in field names
+    __return_field_names(self, field_list):
+        'private', helper method to return the names of fields from a list of tuples with first value
+        in tuple equal to field name
+
+    __check_no_list_duplicates(self, check_list):
+        'private', helper method to check for any duplicates in field names
     """
 
     def __init__(self):
@@ -66,6 +76,10 @@ class FieldControl():
         self.int_list = [("quantity", 0, None, "int")]
         self.text_list = [("author", "text"), ("title", "text")]
         self.float_list = []
+
+        self.int_field_names = self.__return_field_names(self.int_list)
+        self.text_field_names = self.__return_field_names(self.text_list)
+        self.float_field_names = self.__return_field_names(self.float_list)
 
         # perform check that primary_key field has been stated
         if not self.primary_key:
@@ -77,17 +91,20 @@ class FieldControl():
                 "Error Log - At least one additional field has not been stated for 'Book' Entity")
 
         # perform check that field names in and between each list is unique
-        if not self.no_duplicates_tuple_lists(self.int_list, self.text_list, self.float_list):
+        if not self.__no_duplicates_tuple_lists(self.int_list, self.text_list, self.float_list):
             print("Error Log - A duplicated field name has been stated.")
 
 
     def __str__(self):
         """return attributes of 'FieldControl' instance as string for testing"""
         return (f"PK: {self.primary_key}, Integer_List: {self.int_list}, " +
-                f"Text_List: {self.text_list}, Float_List: {self.float_list}")
+                f"Text_List: {self.text_list}, Float_List: {self.float_list}, " +
+                f"int_fields: {self.int_field_names}, text_fields: {self.text_field_names}, " +
+                f"float_fields: {self.float_field_names}")
     
-    def return_field_names(self, field_list):
-        """Helper Function that may be called by another class to retrieve the names of
+
+    def __return_field_names(self, field_list):
+        """Internal, Helper Function that may be called by another class to retrieve the names of
             fields contained with class atrribute lists of tuples
 
         Keyword Arguments:
@@ -102,8 +119,8 @@ class FieldControl():
         return [tup[0] for tup in field_list]
 
 
-    def no_duplicates_tuple_lists(self, *tuple_lists):
-        """Helper Function validating there are no duplicated values in a list.
+    def __no_duplicates_tuple_lists(self, *tuple_lists):
+        """Internal, Helper Function validating there are no duplicated values in a list.
 
         Keyword Arguments:
         ------------------
@@ -208,11 +225,10 @@ class CreateDefaultBookTable:
         self.field_control = FieldControl()
         # set name of primary key
         self.primary_key = self.field_control.primary_key[0]
-        # iterate through 'int_list", 'text_list' and 'float_list' in field_control
-        # to instantiate current instance with field names tup(0)
-        self.int_list = [tup[0] for tup in self.field_control.int_list]
-        self.text_list = [tup[0] for tup in self.field_control.text_list]
-        self.float_list = [tup[0] for tup in self.field_control.float_list]
+        # use field_control to retrieve and set lists containing int, text and float field names
+        self.int_list = self.field_control.int_field_names
+        self.text_list = self.field_control.text_field_names
+        self.float_list = self.field_control.float_field_names
 
 
     def __str__(self):

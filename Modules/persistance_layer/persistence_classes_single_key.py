@@ -25,7 +25,7 @@ class DatabaseController():
     -----------------
     database_name: str
         name of the database to connect to, also serves as path to database
-        file if not present in current directory
+         file if not present in current directory
     connection: class:sq3lite: Connection
         object to connect to database
     cursor: class:sqlite3.Cursor
@@ -75,6 +75,7 @@ class DatabaseController():
         try:
             # attempt to make connection to database. Creates database if not present.
             self.connection = sqlite3.connect(self.database_name)
+            # retrieve cursor object from data_base connection
             self.cursor = self.connection.cursor()
             return self.cursor
 
@@ -91,7 +92,7 @@ class DatabaseController():
         Exceptions:
         -------------
         sqlite3.DatabaseError
-            Raised is connection to database cannot be closed
+            Raised if connection to database cannot be closed
         """
         try:
             self.connection.close()
@@ -123,8 +124,10 @@ class DataBaseQueryClass():
     -----------
     __init__(self, database_name, table_name):
         instantiate instance of class
+
     execute(self):
         method defining logic to execute query against database
+
     create_database_connection(self):
         attempt to create database connection and initialize "connection"
         "cursor" objects
@@ -203,7 +206,7 @@ class CreateTableSingleKey(DataBaseQueryClass):
         Arguments:
         ---------------
         primary_key: inherited from function call
-            primary key for table creation(non-compound)
+            primary key for table creation (non-compound)
         int-list: list (Optional - set to None as Default)
             list containing names of fields that would hold integers
         text-list: list (Optional - set to None as Default)
@@ -219,6 +222,7 @@ class CreateTableSingleKey(DataBaseQueryClass):
 
         # attempt to make connection to database (through super class)
         # successful creation will initialise 'cursor' and 'connection' objects
+        #   in parent class
         self.create_database_connection()
 
     def execute(self):
@@ -378,7 +382,7 @@ class ReadData(DataBaseQueryClass):
     -----------------
     fields_list: list of field names as strings
         desired fields to return values (enter * for all)
-    where_fields_list: list of fields  as strings
+    where_fields_list: list of fields as strings
         field names used in WHERE part of query to perform checks on
     search_vals: tuple with entities matching type corresponding to entity in where_fields_list
         values to be checked for match
@@ -491,7 +495,7 @@ class UpdateData(DataBaseQueryClass):
     ----------------
     __init__(self, database_name, table_name, field_names, update_tuple):
         Initialize UpdateData and parent DataBaseQueryClass objects allowing
-        for sqlite3 connection.  Parent contructor attempts to create connection to database.
+        for sqlite3 connection. Parent contructor attempts to create connection to database.
 
     execute(self):
         Attempt to update value in a row and close database connection

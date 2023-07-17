@@ -13,12 +13,11 @@ retrieval. Imports and use of this module MUST be done as:
     Valid BookController Arguments are:
     "Create Default Table", "Create Book", "Search Book", "Update Book" and "Delete Book"
 
-3) Function 'create_crud_instance()' MUST then be called for correct class instance return
-    for CRUD Operation
+3) Function 'create_crud_instance()' in BookController MUST then be called for correct class
+    instance return for CRUD Operation
 
 NOTE: Database logic and queries are not handled by classes within this module. All
-classes return a populated instance to calling method or None. Database and table names as well
-as primary_key increments and tracking are not handled in this module
+classes return a populated instance to calling method or None. 
 
 The order of Fields (which should be extended to the Database by any class utilising this module) is:
 Primary_Key
@@ -27,28 +26,28 @@ Text_Values
 Float_Values
 
 Values within each category would be ordered sequentially
+
+Classes designed with high consideration of Single Responsibility and Open-Closed Principles.
 """
 
-
 class FieldControl():
-    """A component class used to set the names of fields and their types for any composite
-    class. Changes to field names, numeric ranges, types and number of fields must be made
-    in this class.
+    """A component used to set and control the names and types of fields that would be present in
+        a database. Additional value_range attributes are added for Integer and Float fields.
 
     Attributes:
     -----------
-    primary_key: list of tuple
+    primary_key: tuple
         contains a single-field primary key name and its associated type
-    int_list: list of tuple
+    int_list: list of tuple(s)
         list containing tuples ordered as:
-        field_name, lower_range(inclusive), upper_range(inclusive), data_type as int
-        lower_range and uppper_range may be set as None (not empty)
-    text_list: list of tuple
-        list containing tuples of field names and their type as a text (String)
-    float_list: list of tuple
+        field_name, data_type as int, lower_range(inclusive), upper_range(inclusive)
+        lower_range and upper_range may be set as None (not empty)
+    text_list: list of tuple(s)
+        list containing tuples of field names and their type as text (String)
+    float_list: list of tuple(s)
         list containing tuples ordered as:
-        field_name, lower_range(inclusive), upper_range(inclusive), data_type as float
-        lower_range and uppper_range may be set as None (not empty)
+        field_name, data_type as float, lower_range(inclusive), upper_range(inclusive)
+        lower_range and upper_range may be set as None (not empty)
     int_field_names: string list
         list containing field_names populated from 'int_list'
     text_field_names: string list
@@ -69,7 +68,7 @@ class FieldControl():
         in tuple equal to field name
 
     __check_no_list_duplicates(self, check_list):
-        'private', helper method to check for any duplicates in field names
+        'private', helper method to check for any duplicates in check_list
     """
 
     def __init__(self):
@@ -88,11 +87,11 @@ class FieldControl():
         self.text_field_names = self.__return_field_names(self.text_list)
         self.float_field_names = self.__return_field_names(self.float_list)
 
-        # perform check that primary_key field has been stated
+        # perform check that primary_key tuple has been populated
         if not self.primary_key:
             print("Error Log - A Primary Key has not been stated for 'Book' Entity")
 
-        # perform check that at least one list has been populated
+        # perform check that at least one field list has been populated
         if not self.int_list and not self.text_list and not self.float_list:
             print(
                 "Error Log - At least one additional field has not been stated for 'Book' Entity")
@@ -115,11 +114,11 @@ class FieldControl():
         Keyword Arguments:
         -----------
         field_list: list of tuples
-            list containing tuples that MUST confirm to tuple[0] = field_name as string
+            list containing tuples that MUST conform to tuple[0] = field_name as string
 
         Return:
         ---------
-        list containing the names of fields from 'field_list'
+        list containing the names of fields from 'field_list' (may return empty list)
         """
         return [tup[0] for tup in field_list]
 
@@ -145,7 +144,7 @@ class FieldControl():
                 combined_list.append(tup[0])
 
         # Perform check within combined list to check for any duplicates. As implementation
-        # is anticiplated for be used for field lists with an assumed small count, complexity
+        # is anticipated to be used for field lists with an assumed small count, complexity
         # has been left as 0(n^2)
         for i in range(0, len(combined_list) - 1):
             for j in range(i + 1, len(combined_list)):
@@ -157,9 +156,8 @@ class FieldControl():
         # no duplicates were found
         return True
 
+
 # -------------------------------------------------------------------------------------------------
-
-
 class BookController:
     """Main class of Module used to determine which lower class instance to return
     based on 'book-action'
@@ -182,7 +180,7 @@ class BookController:
     """
 
     def __init__(self, book_action):
-        "Create instance of book controller defining CRUD operation as book-action."
+        "Create instance of BookController with book action attribute."
         self.book_action = book_action
 
     def create_crud_instance(self):
@@ -201,7 +199,7 @@ class BookController:
         elif self.book_action == "Delete Book":
             return BookDelete()
         else:
-            print("Error Log - Invalid Book Action has been Entered for BookController")
+            print("Error Log - Invalid Book Action has been entered for BookController")
 
 
 # -------------------------------------------------------------------------------------------------
@@ -251,18 +249,18 @@ class CreateDefaultBookTable:
 # -------------------------------------------------------------------------------------------------
 class CreateBook:
     """Request and Validate User Input to create a 'Book' Object. 'id'
-    for primary key in books table is not handled or added here.
+    for primary key in books table is not handled or added here or in this module.
 
     Attributes:
     ------------
     field_control: FieldControl
         component holding primary_key field, other field names and associated types
-    title: string
-        name of book
-    Author: string
-        name of book author(s)
-    quantity: int
-        number of book copies currently in stock
+    int_list_values: list of Integer Values
+        values corresponding to each field in field_control int_list
+    text_list_values: list of String Values
+        values corresponding to each field in field_control text_list
+    float_list_values: list of Float Values
+        values corresponding to each field in field_control float_list
 
     Methods:
     --------
@@ -272,12 +270,11 @@ class CreateBook:
     __str__(self):
         return string of class attributes for testing
 
-    retrieve_string_value(self, input_message):
+    retrieve_string_value(self, input_field):
         request and validate user_input for a string (text) based attribute
 
-    def retrieve_numeric_value(self, data_type, input_message, error_message, value_range = []):
+    def retrieve_numeric_value(self, data_type, input_field, error_message, value_range=None):
         use parameters to request and validate user input for a numeric based attribute
-
     """
 
     def __init__(self):
@@ -303,16 +300,16 @@ class CreateBook:
         # retrieve and validate string (text) values from user according to field
         # names in field_control for text_list:
         for text_field in self.field_control.text_list:
-            # text_field[0] = field_name
+            # call retrieve_string_value() method to request user input and validate non-empty
             self.text_list_values.append(
                 self.retrieve_string_value(text_field[0]))
 
         # retrieve and validate int values from user according to field_names
-        # in field_control for int_list. Currently set to only accept values >= 0
+        # in field_control for int_list.
         for int_field in self.field_control.int_list:
+            # call retrieve_numeric_value() to request user input and validate input
+            # is of correct type and within possible numeric range
             self.int_list_values.append(
-                # int_field[0] = field_name,
-                # int_field[1] = lower_range value, int_field[2] = upper_range value
                 self.retrieve_numeric_value("int", int_field[0],
                                             ["Please enter a valid, non-decimal number.",
                                             "Value entered is smaller than allowed minimum",
@@ -323,9 +320,9 @@ class CreateBook:
         # retrieve and validate float values from user according to field_names
         # in field_control for float_list.
         for float_field in self.field_control.float_list:
+            # call retrieve_numeric_value() to request user input and validate input
+            # is of correct type and within possible numeric range
             self.float_list_values.append(
-                # float_field[0] = field_name,
-                # float_field[1] = lower_range value, float_field[2] = upper_range value
                 self.retrieve_numeric_value("float", float_field[0],
                                             ["Please enter a valid number.",
                                             "Value entered is smaller than allowed minimum",
@@ -333,10 +330,12 @@ class CreateBook:
                                             [float_field[2], float_field[3]]
                                             ))
 
+
     def __str__(self):
         "return list attributes of 'CreateBook' instance as string for testing"
         return (f"int_fields: {self.int_list_values}, text_values: {self.text_list_values}, " +
                 f"float_values: {self.float_list_values}")
+
 
     def retrieve_string_value(self, input_field):
         """Request, retrieve and validate user input for a string (text) attribute and return value.
@@ -349,7 +348,7 @@ class CreateBook:
         Return: 
         ----------
         user_input: string
-            retrived user input that is non-empty
+            retrieved user input that is non-empty
         """
         while True:
             user_input = input(f"\nEnter the book's {input_field}: ")
@@ -359,13 +358,14 @@ class CreateBook:
             else:
                 return user_input
 
+
     def retrieve_numeric_value(self, data_type, input_field, error_message, value_range=None):
         """Rquest, retrieve, validate and return user_input for a numeric value.
 
         Arguments:
         -----------
         data_type: string
-            desired input type currently allowing only "Integer" and "Float"
+            desired input type currently allowing only "int" and "float"
         input_field: string
             name of field that would hold a numeric value currently being requested
         error_message: string list
@@ -386,7 +386,8 @@ class CreateBook:
         Exceptions:
         -----------
         ValueError:
-            caused by user entering a value not corresponding to 'data_type'
+            caused by user entering a value not corresponding to 'data_type' for
+            int of float
 
         Return: 
         ----------
@@ -436,10 +437,10 @@ class CreateBook:
 class BookSearch:
     """Request and validate user_input to initialise class instance with field_names and search
         values corresponding to a book search.
-        NOTE: whilst the database query executions may still execute even with invalid data_types 
+        NOTE: whilst the database query executions may still execute even with invalid data_types
               or values out of a given range, validation was added (here and in field_control) to
-              allow for potential restriction of search values adding to possible scalability of 
-              project.
+              allow for potential restriction of search values adding to possible scalability of
+              project in addition to maintaining control of data_types in application.
 
     "Attributes:
     ------------
@@ -456,7 +457,7 @@ class BookSearch:
     --------
     __init__(self):
         Constructor used to create class instance with attributes retrieved from user, using
-        class method 'search_book' to retrieve and set class instance attributes
+        class method 'search_book_single_field' to retrieve and set class instance attributes
 
     __str__(self):
         return string containing values for class attributes for testing
@@ -583,10 +584,12 @@ class BookSearch:
                             print("\nA value was not recieved")
                             continue
 
-                        # perform check for correct type if field corresponds to an Integer
-                        # (second value in list for dict 'search_option_value')
+                        # Determine data_type by matching user option selection to tuple lists
+                        # in field control
+                        # second value in list for dict 'search_option_value' holds data_type
                         if search_option_field[option_input][1] == "int_list":
-                            # store matching int tuple containing possible allowed value rangeS
+                            # variable to store matching int tuple containing possible allowed
+                            # value rangeS
                             int_tup = ()
                             # Retrieve possible allowed value range from field_control,
                             # by iterating through all tuples trying to match field names
@@ -598,6 +601,7 @@ class BookSearch:
                             # check value is integer and within allowed value range
                             try:
                                 # check if user_value is less than allowed minimum value
+                                # tup[2] holds minimum value (or None)
                                 if int_tup[2] is not None:
                                     if int(user_value) < int_tup[2]:
                                         print(
@@ -605,6 +609,7 @@ class BookSearch:
                                             f"{int_tup[2]}")
                                         continue
                                 # check if user_value is above allowed maximim value
+                                # tup[3] holds maximum value (or None)
                                 if int_tup[3] is not None:
                                     if int(user_value) > int_tup[3]:
                                         print(
@@ -613,7 +618,7 @@ class BookSearch:
                                         continue
 
                                 # if value_range was not set, attempt conversion to int to check
-                                # valid data type was entered
+                                # if valid data_type was entered
                                 if int_tup[2] is None and int_tup[3] is None:
                                     int(user_value)
 
@@ -622,10 +627,10 @@ class BookSearch:
                                     "\nInvalid. Please enter a valid, non-decimal number")
                                 continue
 
-                        # perform check for correct type if field corresponds to an Float
+                        # perform check for correct type if field corresponds to a float
                         # (second value in list for dict 'search_option_value')
                         elif search_option_field[option_input][1] == "float_list":
-                            # store matching float tuple containing possible allowed value rangeS
+                            # store matching float tuple containing possible allowed value ranges
                             float_tup = ()
                             # Retrieve possible allowed value range from field_control,
                             # by iterating through all tuples trying to match field names
@@ -676,9 +681,8 @@ class BookSearch:
             except ValueError:
                 print("\nPlease enter a valid number for your choice.")
 
+
 # -------------------------------------------------------------------------------------------------
-
-
 class BookUpdate:
     """Retrieve desired user field and associated value to perform update to field. Update is only
         performed using primary key for 'book' entity.
@@ -727,11 +731,10 @@ class BookUpdate:
             holds (in order) new value for field to be updated and primary key value
             where update should be performed
         """
-
         self.field_control = FieldControl()
         self.field_names = []
         self.update_tuple = []
-        # call 'update_book_single_field() to initialise attributes with user inputs'
+        # call 'update_book_single_field()' to initialise attributes with user inputs
         self.update_book_single_field()
 
     def __str__(self):
@@ -759,7 +762,7 @@ class BookUpdate:
                     f"\nA {self.field_control.primary_key[0]} was not entered.")
                 continue
 
-            # perform check for primary key as 'int' type
+            # perform check for primary key input value as 'int' type
             if primary_key_type == "int":
                 # attempt cast of user input for primary key to int:
                 try:
@@ -780,15 +783,17 @@ class BookUpdate:
             break
 
         # combine tuple lists in field_control into single list containing all tuples
+        # all tuples hold: 'field_name', 'data_type'
+        # tuples for numeric lists also hold: 'min_value' and 'max-value' - both may be None
         fields_combined = []
         fields_combined.extend(self.field_control.int_list)
         fields_combined.extend(self.field_control.text_list)
         fields_combined.extend(self.field_control.float_list)
 
-        # dictonary to hold all field_tuples
+        # dictonary to hold all field_tuples with an index number acting as the key
         field_tuple_dict = {}
 
-        # add combined_list tuples into dictionary
+        # add combined_list tuples into dictionary with an index number
         for count, tuple_val in enumerate(fields_combined):
             field_tuple_dict[count] = tuple_val
 
@@ -821,7 +826,7 @@ class BookUpdate:
             except ValueError:
                 print("\nInvalid Option. Please enter a valid option number.")
 
-        # add selected field_from from user_option selection to 'field_names' attribute
+        # add selected field_from user_option selection to 'field_names' attribute
         self.field_names.append(field_tuple_dict[user_option][0])
 
         # set data type for user chosen field to update

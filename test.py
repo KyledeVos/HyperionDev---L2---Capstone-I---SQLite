@@ -7,8 +7,8 @@ from Modules.business_logic import EntityPersistanceMatcherControl
 ###########################################################################
 # QUICK TESTING
 
-# connection = sqlite3.connect("db")
-# cursor = connection.cursor()
+connection = sqlite3.connect("db")
+cursor = connection.cursor()
 
 # print(cursor.execute("SELECT * from books WHERE id = ?", (3,)).fetchall())
 # print(cursor.execute("Select * FROM books ORDER BY id DESC LIMIT 1").fetchall())
@@ -27,7 +27,7 @@ from Modules.business_logic import EntityPersistanceMatcherControl
 # names = [description[0] for description in cursor.description]
 # print(names)
 
-# connection.close()
+connection.close()
 
 ############################################################################
 # INDEPENDENT TESTING FOR book module
@@ -78,6 +78,9 @@ from Modules.business_logic import EntityPersistanceMatcherControl
 
 # table_reader = persistence_classes_single_key.ReadData("db", "books", ["id", "qty", "title", "author"])
 # print(table_reader.execute())
+
+# last_row = persistence_classes_single_key.ReturnLastId("db", "books", "id")
+# print(last_row.execute())
 
 
 ###############################################################################

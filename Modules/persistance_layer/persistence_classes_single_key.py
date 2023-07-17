@@ -364,7 +364,7 @@ class InsertData(DataBaseQueryClass):
 
         except sqlite3.OperationalError as operational_error:
             print(
-                f"An error has occured trying insert data into {self.table_name}")
+                f"An error has occured trying to insert data into {self.table_name}")
             print(operational_error)
         except sqlite3.DatabaseError as database_error:
             print(database_error)
@@ -555,7 +555,7 @@ class UpdateData(DataBaseQueryClass):
 
         except sqlite3.OperationalError as update_error:
             print(
-                f"An error has occured trying update data in {self.table_name}")
+                f"An error has occured trying to update data in {self.table_name}")
             print(update_error)
         except sqlite3.DatabaseError as database_error:
             print(database_error)
@@ -613,7 +613,7 @@ class DeleteData(DataBaseQueryClass):
 
         Return:
         -----------
-        Returns None if there was an error when attemting to connect to database
+        Returns None if there was an error when attempting to connect to database
         Return True if the number of affected rows after deletion is greater than 0
         Return False if number of affected rows is 0
 
@@ -645,6 +645,66 @@ class DeleteData(DataBaseQueryClass):
             print(operational_error)
         except sqlite3.DatabaseError as database_error:
             print(database_error)
+        finally:
+            # close connection to database with parent class
+            self.database_controller.close_connection()
+
+
+# -------------------------------------------------------------------------------------------------
+class ReturnLastId(DataBaseQueryClass):
+    """"""
+
+    def __init__(self, database_name, table_name, primary_key):
+        """Constructor initialising ReturnLastId and DataBaseQueryClass parent objects.
+
+        Arguments:
+        ---------------
+        database_name: str
+            name of the database to connect to, also serves as path to database
+            file if not present in current directory
+        table_name: str
+            name of new table to create in database
+        primary_key: str
+            name of primary_key field
+        """
+        super().__init__(database_name, table_name)
+        self.primary_key = primary_key
+        # attempt to make connection to database (through super class)
+        # successful creation will initialise 'cursor' and 'connection' objects
+        self.create_database_connection()
+
+    def execute(self):
+        """Connect to database, create SQL query to retrieve last row. Close Database Connection.
+
+        Return:
+        -----------
+        Returns None if there was an error when attempting to connect to database
+        Returns empty list if table in database is empty
+        Returns last row in table with field_values in a list
+
+        Exceptions:
+        -----------
+        sqlite.OperationalError:
+            raised if SQL query is not correctly constructed and executed
+        sqlite.DatabaseError:
+            raised for errors in closing connection or errors not caught by: sqlite.OperationalError
+        """
+        # check if connection (in parent class) to database was successful,
+        if self.connection is None:
+            return None
+        try:
+            # create and execute query using primary_key field_name to return last row in database
+            return self.cursor.execute(f"SELECT * FROM {self.table_name} ORDER BY " +
+                                       f"{self.primary_key} DESC LIMIT 1").fetchall()
+
+        except sqlite3.OperationalError as operational_error:
+            print(
+                f"An error has occured trying to delete data from {self.table_name}")
+            print(operational_error)
+            return None
+        except sqlite3.DatabaseError as database_error:
+            print(database_error)
+            return None
         finally:
             # close connection to database with parent class
             self.database_controller.close_connection()

@@ -63,6 +63,9 @@ class FieldControl():
     __str__(self):
         print all declared field_names and types for testing
 
+    primary_key_field_getter(self):
+        Getter to return primary_key field_name
+
     __return_field_names(self, field_list):
         'private', helper method to return the names of fields from a list of tuples with first value
         in tuple equal to field name
@@ -80,7 +83,7 @@ class FieldControl():
         # set int value of 'quantity' to have a lower, inclusive limit of zero and no preset upper limit.
         self.int_list = [("quantity", "int", 0, None)]
         self.text_list = [("author", "text"), ("title", "text")]
-        self.float_list = [("price", "float", -1.3, 10)]
+        self.float_list = []
 
         # attributes storing only the names of the fields (no other data as in tuples above)
         self.int_field_names = self.__return_field_names(self.int_list)
@@ -176,7 +179,8 @@ class BookController:
     create_crud_instance(self):
         Compulsory method that must be called after initialisation of 'BookController'
         determine instance of lower class to instantiate and return based on
-        attribute 'book_action'
+        attribute 'book_action' Returns none for 'book_action' not matching:
+        'Create Default Table', 'Create Book', 'Search Book', 'Update Book' and 'Delete Book'
     """
 
     def __init__(self, book_action):
@@ -200,6 +204,7 @@ class BookController:
             return BookDelete()
         else:
             print("Error Log - Invalid Book Action has been entered for BookController")
+            return None
 
 
 # -------------------------------------------------------------------------------------------------

@@ -526,10 +526,6 @@ class ReadData(DataBaseQueryClass):
                     if count != len(self.where_fields_list) - 1:
                         query += " AND "
 
-            # retrieve field names
-            self.cursor.execute(f"SELECT * FROM {self.table_name}")
-            field_names = tuple([description[0] for description in self.cursor.description])
-
             # execute query and store returned row(s)
             # Case 1: Return all rows (no 'where' condition)
             if self.where_fields_list is None:
@@ -541,13 +537,23 @@ class ReadData(DataBaseQueryClass):
             else:
                 rows_returned = self.cursor.execute(query, self.search_vals).fetchall()
 
-            # combine field_names tuple and returned database rows
-            fields_and_values = []
-            fields_and_values.append(field_names)
-            fields_and_values.extend(rows_returned)
-            # return field_names and row(s) returned from database
-            return fields_and_values
+            # if at least one row was returned, retrieve field names
+            # Referenced from AlixaProDev on 19 July 2023
+            # Available from:
+            # https://www.alixaprodev.com/how-to-get-column-names-from-sqlite-database-table-in-python/
+            if len(rows_returned) > 0:
+                self.cursor.execute(f"SELECT * FROM {self.table_name}")
+                field_names = tuple([description[0] for description in self.cursor.description])
 
+                # combine field_names tuple and returned database rows
+                fields_and_values = []
+                fields_and_values.append(field_names)
+                fields_and_values.extend(rows_returned)
+                # return field_names and row(s) returned from database
+                return fields_and_values
+            # no rows were returned, return empty list
+            else:
+                return rows_returned
 
         except sqlite3.OperationalError as read_error:
             print(

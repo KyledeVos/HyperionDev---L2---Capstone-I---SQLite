@@ -157,16 +157,26 @@ from Modules.business_logic import entity_persistance_matcher_control
 # print(insert_successful)
 
 # 3) Test for Table Read
+# Create Entity Object - Book
+book_controller = book.BookController("Read Entity")
+search_book = book_controller.create_crud_instance()
+# Read from database
+persistance_control = entity_persistance_matcher_control.PersistanceSingleKeyControl(
+    "db", "books", "Read Entity", search_book)
+matching_rows = persistance_control.perform_database_query()
+print(matching_rows)
+
+# 4) Test for All Table Rows Read
 # # Create Entity Object - Book
-# book_controller = book.BookController("Read Entity")
-# search_book = book_controller.create_crud_instance()
+# book_controller = book.BookController("Read All")
+# read_all = book_controller.create_crud_instance()
 # # Read from database
 # persistance_control = entity_persistance_matcher_control.PersistanceSingleKeyControl(
-#     "db", "books", "Read Entity", search_book)
+#     "db", "books", "Read Entity", read_all)
 # matching_rows = persistance_control.perform_database_query()
 # print(matching_rows)
 
-# 4) Test for Table Update
+# 5) Test for Table Update
 # # Create Entity Object - Book
 # book_controller = book.BookController("Update Entity")
 # update_book = book_controller.create_crud_instance()
@@ -176,7 +186,7 @@ from Modules.business_logic import entity_persistance_matcher_control
 # update_successful = persistance_control.perform_database_query()
 # print(update_successful)
 
-# # 5) Test for Table Row Deletion
+# # 6) Test for Table Row Deletion
 # # Create Entity Object - Book
 # book_controller = book.BookController("Delete Entity")
 # delete_book = book_controller.create_crud_instance()

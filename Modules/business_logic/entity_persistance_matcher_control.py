@@ -19,7 +19,7 @@ database query execution statuses.
 
 Extensions of this class for additonal Entity and Persistance Classes should conform to the
 constructors of the Entity and Persistance classes given here with user_actions as
-'Create Default Table', 'Create Entity', 'Search Entity' or 'Read Entity', 'Update Entity'
+'Create Default Table', 'Create Entity', 'Search Entity' or 'Read Entity' or 'Read All', 'Update Entity'
 and 'Delete Entity'.
 """
 from Modules.business_logic import book
@@ -29,7 +29,7 @@ from Modules.persistance_layer import persistence_classes_single_key
 class EntityPersistanceSingleKeyControl:
     """Class used to hold database_name, table_name and desired user_action. Initialises
         Entity and Persistance class objects.
-        
+
     Attributes:
     -----------
     database_name: str
@@ -38,8 +38,8 @@ class EntityPersistanceSingleKeyControl:
         name of table in above database
     user-action: str
         description of CRUD action to perform matching actions specified by desired entity class
-        as any one of: 'Create Default Table', 'Create Entity', 'Search Entity' or 'Read Entity',
-        'Update Entity' and 'Delete Entity'
+        as any one of: 'Create Default Table', 'Create Entity', 'Search Entity' or 'Read Entity'
+        or 'Read All', 'Update Entity' and 'Delete Entity'
     entity_object: object
         object populated with required attributes according to desired action against database
     persistance_object: object
@@ -54,7 +54,7 @@ class EntityPersistanceSingleKeyControl:
 
     __str__(self):
         return attributes of 'EntityPersistanceSingleKeyControl' for testing.
-        
+
     create_and_execute_query(self):
         make call to 'perform_database_query()' method in class 'PersistanceSingleKeyControl' 
         to use data from Entity_object to create and execute query against database
@@ -62,7 +62,7 @@ class EntityPersistanceSingleKeyControl:
 
     def __init__(self, table_name, database_name, user_action):
         """Constructor to initialise 'EntityPersistanceSingleKeyControl'.
-        
+
         Attributes:
         -----------
         database_name: str
@@ -72,7 +72,7 @@ class EntityPersistanceSingleKeyControl:
         user-action: str
             description of CRUD action to perform matching actions specified by desired entity class
             as any one of: 'Create Default Table', 'Create Entity', 'Search Entity' or
-            'Read Entity', 'Update Entity' and 'Delete Entity'
+            'Read Entity' or 'Read All', 'Update Entity' and 'Delete Entity'
         entity_object: object
             object populated with required attributes according to desired action against database
         persistance_object: object
@@ -87,13 +87,11 @@ class EntityPersistanceSingleKeyControl:
         self.persistance_object = PersistanceSingleKeyControl(
             database_name, table_name, user_action, self.entity_object)
 
-
     def __str__(self):
         """Return Attributes of EntityPersistanceSingleKeyControl as string for testing"""
         return (f"table_name: {self.table_name}, database_name: {self.database_name} " +
                 f"user_action: {self.user_action}, entity_object: {self.entity_object}, " +
                 f"persistence_object: {self.persistance_object}")
-
 
     def create_and_execute_query(self):
         """call perform_data_base_query() method to construct and execute query and
@@ -180,6 +178,8 @@ class EntityControl:
             return None
 
 # -------------------------------------------------------------------------------------------------
+
+
 class PersistanceSingleKeyControl:
     """Class using Entity Object dependency to retrieve correct data needed for query generation
         and execution against a database using 'persistence_classes_single_key' class.
@@ -196,8 +196,8 @@ class PersistanceSingleKeyControl:
         name of table that should be (or created) in above database
     user_action: str
         description of user action needed for Entity and Persistance Control objects
-        "Create Default Table', 'Create Entity', 'Search Entity' or 'Read Entity', 'Delete Entity'
-        and 'Update Entity'
+        "Create Default Table', 'Create Entity', 'Search Entity' or 'Read Entity' or 'Read All',
+        'Delete Entity' and 'Update Entity'
     entity_object: component object
         instance of class used to retrieve and store required user_input based on user_action
 
@@ -319,7 +319,8 @@ class PersistanceSingleKeyControl:
                         # create tuple with primary_key value and all values retrieved from user as
                         # ints, strings or floats
                         values_tup = (row_primary_value, )
-                        values_tup += tuple(int_values + text_values + float_values)
+                        values_tup += tuple(int_values +
+                                            text_values + float_values)
                         # convert tuple with values to list for correct passing to InsertData
                         # constructor
                         values_list = []
@@ -333,7 +334,8 @@ class PersistanceSingleKeyControl:
                             self.database_name, self.table_name, values_list).execute()
 
                     # user wishes to read / search for an entity in a table
-                    elif self.user_action == "Read Entity" or self.user_action == "Search Entity" :
+                    elif self.user_action == "Read Entity" or \
+                    self.user_action == "Search Entity" or self.user_action == "Read All":
 
                         # retrieve desired field_list values to return
                         return_fields_list = self.entity_object.fields_list
@@ -379,4 +381,5 @@ class PersistanceSingleKeyControl:
 
                     # an invalid user_action has been received
                     else:
-                        print(f"Error Log - No matching action for {self.user_action}")
+                        print(
+                            f"Error Log - No matching action for {self.user_action}")

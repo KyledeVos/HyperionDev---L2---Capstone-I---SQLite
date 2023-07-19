@@ -11,7 +11,7 @@ retrieval. Imports and use of this module MUST be done as:
 2) Control class 'BookController' with 'action' attribute to determine correct instance
     of other classes to create and return. 
     Valid BookController Arguments are:
-    "Create Default Table", "Create Entity", "Search Entity" or 'Read Entity',
+    "Create Default Table", "Create Entity", "Search Entity" or 'Read Entity' or "Read All",
         "Update Entity" and "Delete Entity"
 
 3) Function 'create_crud_instance()' in BookController MUST then be called for correct class
@@ -170,7 +170,8 @@ class BookController:
     ------------
     book_action: String
         used to determine lower class instance to return. Values can only be one of:
-        'Create Default Table', 'Create Entity', 'Search Entity' or 'Read Entity', 'Update Entity' and 'Delete Entity'
+        'Create Default Table', 'Create Entity', 'Search Entity' or 'Read Entity' or 
+        'Read All', 'Update Entity' and 'Delete Entity'
 
     Methods:
     -----------
@@ -181,7 +182,8 @@ class BookController:
         Compulsory method that must be called after initialisation of 'BookController'
         determine instance of lower class to instantiate and return based on
         attribute 'book_action' Returns none for 'book_action' not matching:
-        'Create Default Table', 'Create Entity', 'Search Entity', 'Update Entity' and 'Delete Entity'
+        'Create Default Table', 'Create Entity', 'Search Entity' or 'Read Entity' or 'Read All',
+        'Update Entity' and 'Delete Entity'
     """
 
     def __init__(self, book_action):
@@ -197,8 +199,8 @@ class BookController:
             return CreateDefaultBookTable()
         elif self.book_action == "Create Entity":
             return CreateBook()
-        elif self.book_action == "Search Entity" or self.book_action == "Read Entity":
-            return BookSearch()
+        elif self.book_action == "Search Entity" or self.book_action == "Read Entity" or self.book_action == "Read All":
+            return BookSearch(self.book_action)
         elif self.book_action == "Update Entity":
             return BookUpdate()
         elif self.book_action == "Delete Entity":
@@ -339,12 +341,10 @@ class CreateBook:
                                             [float_field[2], float_field[3]]
                                             ))
 
-
     def __str__(self):
         "return list attributes of 'CreateBook' instance as string for testing"
         return (f"int_fields: {self.int_list_values}, text_values: {self.text_list_values}, " +
                 f"float_values: {self.float_list_values}")
-
 
     def retrieve_string_value(self, input_field):
         """Request, retrieve and validate user input for a string (text) attribute and return value.
@@ -366,7 +366,6 @@ class CreateBook:
                 print("\nAn input was not recieved.")
             else:
                 return user_input
-
 
     def retrieve_numeric_value(self, data_type, input_field, error_message, value_range=None):
         """Rquest, retrieve, validate and return user_input for a numeric value.
@@ -486,20 +485,39 @@ class BookSearch:
     # values corresponding to where_fields_list above
     search_values = None
 
-    def __init__(self):
+    def __init__(self, user_action):
         """call 'search_book_single_field' method to request and validated user_input to populate
             class arguments 'where_fields_list' and 'search_values'. Return of None to constructor
             indicates incorrect arguments where given to 'search_book_single_field' method.
+
+        Attribute
+        ---------
+        user_action: str
+            Description of user action to either allow user to enter book search parameters or 
+            create required parameters to read all books
+            Can only be "Read Book" or "Search Book" to perform book search
+            or "Read All" to create required parameters to search for all books
         """
         self.field_control = FieldControl()
-        # call 'search_book' with int, text and float field_names list from field_control
-        self.search_book_single_field(self.field_control.int_list, self.field_control.text_list,
-                                      self.field_control.float_list)
+        if user_action == "Read Entity" or user_action == "Search Entity":
+            # call 'search_book' with int, text and float field_names list from field_control
+            self.search_book_single_field(self.field_control.int_list, self.field_control.text_list,
+                                          self.field_control.float_list)
+        elif user_action == "Read All":
+            self.read_all_books()
 
     def __str__(self):
         """return class instance variables values for testing."""
         return (f"fields_list: {self.fields_list}, where_fields_list: {self.where_fields_list} " +
                 f"search_vals = {self.search_values}")
+
+
+    def read_all_books(self):
+        """Populate fields list with '*' to return data from all fields in table."""
+        self.fields_list = ["*"]
+        self.where_fields_list = None
+        self.search_values = None
+
 
     def search_book_single_field(self, int_list, text_list, float_list):
         """determine search criteria from user to perform a book(s) search. Method requests and

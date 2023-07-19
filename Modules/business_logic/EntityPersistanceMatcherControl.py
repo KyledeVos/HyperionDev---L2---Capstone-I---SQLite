@@ -286,8 +286,21 @@ class PersistanceSingleKeyControl:
                         search_values = self.entity_object.search_values
 
                         # pass above search attributes to persistance control class to return row(s)
-                        # from table. No matching row returns empty list
+                        # from table. No matching row returns empty list    
                         return persistence_classes_single_key.ReadData(
                             self.database_name, self.table_name, return_fields_list,
                             where_fields_list, search_values).execute()
+                    
+                    # user wishes to update (change info) of an entity
+                    elif self.user_action == "Update Entity":
+
+                        # retrieve list containing name of field to change and primary_key field name
+                        fields_list = self.entity_object.field_names
+                        # retrieve tuple of new value and primary_key field value
+                        update_tuple = self.entity_object.update_tuple
+
+                        # pass above attributes to persistance control class to perform update.
+                        # returns True if update was successful and False if not
+                        return persistence_classes_single_key.UpdateData(
+                            self.database_name, self.table_name, fields_list, update_tuple).execute()
                         

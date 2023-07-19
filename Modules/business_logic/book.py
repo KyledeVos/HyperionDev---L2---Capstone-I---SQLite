@@ -11,7 +11,8 @@ retrieval. Imports and use of this module MUST be done as:
 2) Control class 'BookController' with 'action' attribute to determine correct instance
     of other classes to create and return. 
     Valid BookController Arguments are:
-    "Create Default Table", "Create Entity", "Search Entity", "Update Entity" and "Delete Entity"
+    "Create Default Table", "Create Entity", "Search Entity" or 'Read Entity',
+        "Update Entity" and "Delete Entity"
 
 3) Function 'create_crud_instance()' in BookController MUST then be called for correct class
     instance return for CRUD Operation
@@ -169,7 +170,7 @@ class BookController:
     ------------
     book_action: String
         used to determine lower class instance to return. Values can only be one of:
-        'Create Default Table', 'Create Entity', 'Search Entity', 'Update Entity' and 'Delete Entity'
+        'Create Default Table', 'Create Entity', 'Search Entity' or 'Read Entity', 'Update Entity' and 'Delete Entity'
 
     Methods:
     -----------

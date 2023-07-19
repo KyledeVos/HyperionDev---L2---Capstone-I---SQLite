@@ -1,7 +1,7 @@
 import sqlite3
 from Modules.persistance_layer import persistence_classes_single_key
 from Modules.business_logic import book
-from Modules.business_logic import EntityPersistanceMatcherControl
+from Modules.business_logic import entity_persistance_matcher_control
 
 
 ###########################################################################
@@ -137,40 +137,40 @@ from Modules.business_logic import EntityPersistanceMatcherControl
 # TESTING FOR PersistanceSingleKeyControl Class using EntityControl
 
 # 1) Test for Table Creation
-# Create Entity Object - Book
+# # Create Entity Object - Book
 # book_controller = book.BookController("Create Default Table")
 # new_table = book_controller.create_crud_instance()
 # # Create Table in Database
-# persistance_control = EntityPersistanceMatcherControl.PersistanceSingleKeyControl(
+# persistance_control = entity_persistance_matcher_control.PersistanceSingleKeyControl(
 #     "db", "books", "Create Default Table", new_table)
 # persistance_control.perform_database_query()
 
 # 2) Test Row Insertion
-# Create Entity Object - Book
+# # Create Entity Object - Book
 # book_controller = book.BookController("Create Entity")
 # new_book = book_controller.create_crud_instance()
 # # Add book to database
-# persistance_control = EntityPersistanceMatcherControl.PersistanceSingleKeyControl(
+# persistance_control = entity_persistance_matcher_control.PersistanceSingleKeyControl(
 #     "db", "books", "Create Entity", new_book)
 # insert_successful = persistance_control.perform_database_query()
 # print(insert_successful)
 
 # 3) Test for Table Read
-# Create Entity Object - Book
+# # Create Entity Object - Book
 # book_controller = book.BookController("Read Entity")
 # search_book = book_controller.create_crud_instance()
 # # Read from database
-# persistance_control = EntityPersistanceMatcherControl.PersistanceSingleKeyControl(
+# persistance_control = entity_persistance_matcher_control.PersistanceSingleKeyControl(
 #     "db", "books", "Read Entity", search_book)
 # matching_rows = persistance_control.perform_database_query()
 # print(matching_rows)
 
 # 4) Test for Table Update
-# Create Entity Object - Book
+# # Create Entity Object - Book
 # book_controller = book.BookController("Update Entity")
 # update_book = book_controller.create_crud_instance()
 # # Make update to database
-# persistance_control = EntityPersistanceMatcherControl.PersistanceSingleKeyControl(
+# persistance_control = entity_persistance_matcher_control.PersistanceSingleKeyControl(
 #     "db", "books", "Update Entity", update_book )
 # update_successful = persistance_control.perform_database_query()
 # print(update_successful)
@@ -180,7 +180,7 @@ from Modules.business_logic import EntityPersistanceMatcherControl
 # book_controller = book.BookController("Delete Entity")
 # delete_book = book_controller.create_crud_instance()
 # # Make update to database
-# persistance_control = EntityPersistanceMatcherControl.PersistanceSingleKeyControl(
+# persistance_control = entity_persistance_matcher_control.PersistanceSingleKeyControl(
 #     "db", "books", "Delete Entity", delete_book )
 # delete_successful = persistance_control.perform_database_query()
 # print(delete_successful)

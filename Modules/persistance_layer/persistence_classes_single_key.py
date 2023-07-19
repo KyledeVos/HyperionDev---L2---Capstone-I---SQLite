@@ -764,7 +764,7 @@ class ReturnLastId(DataBaseQueryClass):
             # create and execute query using primary_key field_name to return last row in database
             row =  self.cursor.execute(f"SELECT * FROM {self.table_name} ORDER BY " +
                                        f"{self.primary_key} DESC LIMIT 1").fetchall()
-            
+
             # if table is empty, return 0
             if len(row) == 0:
                 return 0

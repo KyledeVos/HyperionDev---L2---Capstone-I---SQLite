@@ -247,8 +247,8 @@ class CreateTableSingleKey(DataBaseQueryClass):
 
         try:
             # create initial part of query string with table name and single primary-key field
-            query = f"""CREATE TABLE IF NOT EXISTS {self.table_name}({self.primary_key}
-                INTEGER NOT NULL PRIMARY KEY"""
+            query = (f"CREATE TABLE IF NOT EXISTS {self.table_name}({self.primary_key} " +
+                     "INTEGER NOT NULL PRIMARY KEY")
 
             # Iterate through each list below (if provided in class initialization) and add query
             # to create a field for each item
@@ -277,6 +277,68 @@ class CreateTableSingleKey(DataBaseQueryClass):
             print(database_error)
         finally:
             # close connection within method call to parent class
+            self.database_controller.close_connection()
+
+# -------------------------------------------------------------------------------------------------
+class VerifyTable(DataBaseQueryClass):
+    """Verify if a table exists in specified database."""
+
+    def __init__(self, database_name, table_name):
+        """Constructor initialising VerufyTable and DataBaseQueryClass parent objects.
+
+        Arguments:
+        ---------------
+        database_name: str
+            name of the database to connect to, also serves as path to database
+            file if not present in current directory
+        table_name: str
+            name of new table to create in database
+        """
+        super().__init__(database_name, table_name)
+        # attempt to make connection to database (through super class)
+        # successful creation will initialise 'cursor' and 'connection' objects
+        self.create_database_connection()
+
+    def execute(self):
+        """Connect to database, create SQL query to return count of tables in database
+            with name equal to 'table_name'. Close Database Connection.
+
+        Return:
+        -----------
+        Returns None if there was an error when attempting to connect to database
+        Returns True if table count is 1 (table exists)
+        Returns False if table count is 0 (table doe not exist)
+
+        Exceptions:
+        -----------
+        sqlite.OperationalError:
+            raised if SQL query is not correctly constructed and executed
+        sqlite.DatabaseError:
+            raised for errors in closing connection or errors not caught by: sqlite.OperationalError
+        """
+        # check if connection (in parent class) to database was successful,
+        if self.connection is None:
+            return None
+        try:
+            # create and execute query to return number of tables with name equal to 'table_name'
+            # Referenced from Python Examples on 18 July 2023
+            # Available from: https://pythonexamples.org/python-sqlite3-check-if-table-exists/
+            table_count = self.cursor.execute("SELECT count(name) FROM sqlite_master WHERE " +
+                                              f"type='table' AND name=\'{self.table_name}\'").fetchone()
+            
+            # if a table was found with matching name, return True. If not, return False
+            return True if table_count[0] == 1 else False
+
+        except sqlite3.OperationalError as operational_error:
+            print(
+                f"An error has occured trying to confirm existence of table {self.table_name}")
+            print(operational_error)
+            return None
+        except sqlite3.DatabaseError as database_error:
+            print(database_error)
+            return None
+        finally:
+            # close connection to database with parent class
             self.database_controller.close_connection()
 
 
@@ -328,6 +390,7 @@ class InsertData(DataBaseQueryClass):
         Return:
         ---------
         Returns None only if connection to database could not be made
+        Return True for more than one row added, False for no rows added
 
         Exceptions:
         -----------
@@ -361,6 +424,11 @@ class InsertData(DataBaseQueryClass):
                 # execute for multiple row insertions with cursor in parent class
                 self.cursor.executemany(query, self.row_data_list)
             self.connection.commit()
+
+            # determine number of affected rows and return True if more than one row
+            # was affected with database query
+            affected_rows = self.cursor.rowcount
+            return True if affected_rows > 0 else False
 
         except sqlite3.OperationalError as operational_error:
             print(
@@ -652,7 +720,7 @@ class DeleteData(DataBaseQueryClass):
 
 # -------------------------------------------------------------------------------------------------
 class ReturnLastId(DataBaseQueryClass):
-    """"""
+    """Retrieve last row in Database."""
 
     def __init__(self, database_name, table_name, primary_key):
         """Constructor initialising ReturnLastId and DataBaseQueryClass parent objects.
@@ -694,12 +762,18 @@ class ReturnLastId(DataBaseQueryClass):
             return None
         try:
             # create and execute query using primary_key field_name to return last row in database
-            return self.cursor.execute(f"SELECT * FROM {self.table_name} ORDER BY " +
+            row =  self.cursor.execute(f"SELECT * FROM {self.table_name} ORDER BY " +
                                        f"{self.primary_key} DESC LIMIT 1").fetchall()
+            
+            # if table is empty, return 0
+            if len(row) == 0:
+                return 0
+            else:
+                return row[0][0]
 
         except sqlite3.OperationalError as operational_error:
             print(
-                f"An error has occured trying to delete data from {self.table_name}")
+                f"An error has occured trying to retrieve last row id from {self.table_name}")
             print(operational_error)
             return None
         except sqlite3.DatabaseError as database_error:

@@ -11,7 +11,7 @@ retrieval. Imports and use of this module MUST be done as:
 2) Control class 'BookController' with 'action' attribute to determine correct instance
     of other classes to create and return. 
     Valid BookController Arguments are:
-    "Create Default Table", "Create Book", "Search Book", "Update Book" and "Delete Book"
+    "Create Default Table", "Create Entity", "Search Entity", "Update Entity" and "Delete Entity"
 
 3) Function 'create_crud_instance()' in BookController MUST then be called for correct class
     instance return for CRUD Operation
@@ -81,7 +81,7 @@ class FieldControl():
         """
         self.primary_key = ("id", "int")
         # set int value of 'quantity' to have a lower, inclusive limit of zero and no preset upper limit.
-        self.int_list = [("quantity", "int", 0, None)]
+        self.int_list = [("qty", "int", 0, None)]
         self.text_list = [("author", "text"), ("title", "text")]
         self.float_list = []
 
@@ -169,7 +169,7 @@ class BookController:
     ------------
     book_action: String
         used to determine lower class instance to return. Values can only be one of:
-        'Create Default Table', 'Create Book', 'Search Book', 'Update Book' and 'Delete Book'
+        'Create Default Table', 'Create Entity', 'Search Entity', 'Update Entity' and 'Delete Entity'
 
     Methods:
     -----------
@@ -180,7 +180,7 @@ class BookController:
         Compulsory method that must be called after initialisation of 'BookController'
         determine instance of lower class to instantiate and return based on
         attribute 'book_action' Returns none for 'book_action' not matching:
-        'Create Default Table', 'Create Book', 'Search Book', 'Update Book' and 'Delete Book'
+        'Create Default Table', 'Create Entity', 'Search Entity', 'Update Entity' and 'Delete Entity'
     """
 
     def __init__(self, book_action):
@@ -194,13 +194,13 @@ class BookController:
         """
         if self.book_action == "Create Default Table":
             return CreateDefaultBookTable()
-        elif self.book_action == "Create Book":
+        elif self.book_action == "Create Entity":
             return CreateBook()
-        elif self.book_action == "Search Book":
+        elif self.book_action == "Search Entity":
             return BookSearch()
-        elif self.book_action == "Update Book":
+        elif self.book_action == "Update Entity":
             return BookUpdate()
-        elif self.book_action == "Delete Book":
+        elif self.book_action == "Delete Entity":
             return BookDelete()
         else:
             print("Error Log - Invalid Book Action has been entered for BookController")
@@ -290,6 +290,8 @@ class CreateBook:
         -----------
         field_control: FieldControl
             component holding primary_key field, other field names and associated types
+        primary_key_field: str
+            holds name of primary key (for use in persistance class)
         int_list_values: list of Integer Values
             values corresponding to each field in field_control int_list
         text_list_values: list of String Values
@@ -298,6 +300,7 @@ class CreateBook:
             values corresponding to each field in field_control float_list
         """
         self.field_control = FieldControl()
+        self.primary_key_data = self.field_control.primary_key
         self.int_list_values = []
         self.text_list_values = []
         self.float_list_values = []

@@ -120,8 +120,6 @@ class EntityControl:
             return None
 
 # -------------------------------------------------------------------------------------------------
-
-
 class PersistanceSingleKeyControl:
     """Class using Entity Object dependancy to retrieve correct data needed for query generation
         and execution against a database using 'persistence_classes_single_key' class.
@@ -264,14 +262,15 @@ class PersistanceSingleKeyControl:
                         values_tup = (row_primary_value, )
                         values_tup += tuple(int_values +
                                             text_values + float_values)
-                        # convert tuple with values to list for correct passing to InsertData constructor
+                        # convert tuple with values to list for correct passing to InsertData
+                        # constructor
                         values_list = []
                         values_list.append(values_tup)
 
                         # Create instance of 'CreateTableSingleKey' class which initialises and
-                        # manages database connection. Call its 'execute()' method to create and execute
+                        # manages database connection. Call 'execute()' method to create and execute
                         # query to create and add new row to table
-                        # Function call returns True for more than one row affected or False for none affected
+                        # returns True for more than one row affected or False for none affected
                         return persistence_classes_single_key.InsertData(
                             self.database_name, self.table_name, values_list).execute()
 
@@ -286,15 +285,16 @@ class PersistanceSingleKeyControl:
                         search_values = self.entity_object.search_values
 
                         # pass above search attributes to persistance control class to return row(s)
-                        # from table. No matching row returns empty list    
+                        # from table. No matching row returns empty list
                         return persistence_classes_single_key.ReadData(
                             self.database_name, self.table_name, return_fields_list,
                             where_fields_list, search_values).execute()
-                    
+
                     # user wishes to update (change info) of an entity
                     elif self.user_action == "Update Entity":
 
-                        # retrieve list containing name of field to change and primary_key field name
+                        # retrieve list containing name of field to change and
+                        # primary_key field name
                         fields_list = self.entity_object.field_names
                         # retrieve tuple of new value and primary_key field value
                         update_tuple = self.entity_object.update_tuple
@@ -302,5 +302,23 @@ class PersistanceSingleKeyControl:
                         # pass above attributes to persistance control class to perform update.
                         # returns True if update was successful and False if not
                         return persistence_classes_single_key.UpdateData(
-                            self.database_name, self.table_name, fields_list, update_tuple).execute()
-                        
+                            self.database_name, self.table_name, fields_list,
+                            update_tuple).execute()
+
+                    # user wishes to delete an entity
+                    elif self.user_action == "Delete Entity":
+
+                        # retrieve name of primary_key field from Entity Object
+                        primary_field = self.entity_object.primary_key_field
+                        # retrieve primary_key value from Entity Object
+                        primary_value = self.entity_object.primary_value
+
+                        # pass above attributes to persistance control class to perform
+                        # row deletion. Returns True for successful deletion and False if not
+                        return persistence_classes_single_key.DeleteData(
+                            self.database_name, self.table_name, primary_field,
+                            primary_value).execute()
+
+                    # an invalid action has been attempted
+                    else:
+                        print(f"Error Log - No matching action for {self.user_action}")

@@ -196,7 +196,7 @@ class BookController:
             return CreateDefaultBookTable()
         elif self.book_action == "Create Entity":
             return CreateBook()
-        elif self.book_action == "Search Entity":
+        elif self.book_action == "Search Entity" or self.book_action == "Read Entity":
             return BookSearch()
         elif self.book_action == "Update Entity":
             return BookUpdate()

@@ -150,7 +150,7 @@ class PersistanceSingleKeyControl:
     __str__(self):
         "Return Attributes of PersistanceControl Class as string for testing
 
-    
+
     """
 
     def __init__(self, database_name, table_name, user_action, entity_object):
@@ -160,18 +160,16 @@ class PersistanceSingleKeyControl:
         self.user_action = user_action
         self.entity_object = entity_object
 
-
     def __str__(self):
         """Return Attributes of PersistanceControl Class as string for testing."""
         return (f"database_name: {self.database_name}, table_name: {self.table_name}, " +
                 f"user_action: {self.user_action}, entity_object: {self.entity_object}")
 
-
     def perform_database_query(self):
         """Determine correct action based on 'user_action' to call Entity Object methods to 
             retrieve and validate user_input. Format and pass data to Persistance Control class
             according to requirements and execute against a database.
-            
+
             Return:
             -------
             Function may return None, a boolean value or a list of values depending on desired
@@ -224,6 +222,7 @@ class PersistanceSingleKeyControl:
                 else:
                     # table does exist and program may proceed with desired user action
 
+                    # user wishes to create a new entity (row) in a table
                     if self.user_action == "Create Entity":
                         # retrieve potential int_list, text_list and float_list
                         # values (in that order) from entity object
@@ -240,18 +239,19 @@ class PersistanceSingleKeyControl:
                         # if type is integer, retrieve last row from table to increment primary
                         # key value for new (current) row by 1
                         if primary_key_type == "int":
-                            
+
                             # increment primary_key int value for current row by 1 from last in
                             # database table
                             row_primary_value = persistence_classes_single_key.ReturnLastId(
                                 self.database_name, self.table_name, primary_key_name).execute()
                             row_primary_value += 1
-                        
+
                         # primary key is not an integer (not recommended)
                         else:
                             # loop until user enters a non-empty value for primary_key
                             while True:
-                                row_primary_value = input("\nPlease enter a unique identifier for new entity")
+                                row_primary_value = input(
+                                    "\nPlease enter a unique identifier for new entity")
                                 if row_primary_value != "":
                                     print("\nA value was not entered.")
                                     continue
@@ -262,16 +262,32 @@ class PersistanceSingleKeyControl:
                         # create tuple with primary_key value and all values retrieved from user as
                         # ints, strings or floats
                         values_tup = (row_primary_value, )
-                        values_tup += tuple(int_values + text_values + float_values)
+                        values_tup += tuple(int_values +
+                                            text_values + float_values)
                         # convert tuple with values to list for correct passing to InsertData constructor
                         values_list = []
                         values_list.append(values_tup)
-                        
+
                         # Create instance of 'CreateTableSingleKey' class which initialises and
                         # manages database connection. Call its 'execute()' method to create and execute
                         # query to create and add new row to table
                         # Function call returns True for more than one row affected or False for none affected
                         return persistence_classes_single_key.InsertData(
                             self.database_name, self.table_name, values_list).execute()
-                        
 
+                    # user wishes to read / search for an entity in a table
+                    elif self.user_action == "Read Entity":
+
+                        # retrieve desired field_list values to return
+                        return_fields_list = self.entity_object.fields_list
+                        # retrieve field names to be used for search (may be empty)
+                        where_fields_list = self.entity_object.where_fields_list
+                        # retrieve search values to be used for entity search
+                        search_values = self.entity_object.search_values
+
+                        # pass above search attributes to persistance control class to return row(s)
+                        # from table. No matching row returns empty list
+                        return persistence_classes_single_key.ReadData(
+                            self.database_name, self.table_name, return_fields_list,
+                            where_fields_list, search_values).execute()
+                        

@@ -526,16 +526,28 @@ class ReadData(DataBaseQueryClass):
                     if count != len(self.where_fields_list) - 1:
                         query += " AND "
 
-            # execute query and return row as tuple in list (empty list for no match)
+            # retrieve field names
+            self.cursor.execute(f"SELECT * FROM {self.table_name}")
+            field_names = tuple([description[0] for description in self.cursor.description])
+
+            # execute query and store returned row(s)
             # Case 1: Return all rows (no 'where' condition)
             if self.where_fields_list is None:
-                return self.cursor.execute(query).fetchall()
+                rows_returned =  self.cursor.execute(query).fetchall()
             # Case 2: Single 'where' condition - manually add comma for tuple
             elif len(self.where_fields_list) == 1:
-                return self.cursor.execute(query, (self.search_vals), ).fetchall()
+                rows_returned = self.cursor.execute(query, (self.search_vals), ).fetchall()
             # Case 3: Multiple 'where' conditions, use search_vals tuple as is
             else:
-                return self.cursor.execute(query, self.search_vals).fetchall()
+                rows_returned = self.cursor.execute(query, self.search_vals).fetchall()
+
+            # combine field_names tuple and returned database rows
+            fields_and_values = []
+            fields_and_values.append(field_names)
+            fields_and_values.extend(rows_returned)
+            # return field_names and row(s) returned from database
+            return fields_and_values
+
 
         except sqlite3.OperationalError as read_error:
             print(

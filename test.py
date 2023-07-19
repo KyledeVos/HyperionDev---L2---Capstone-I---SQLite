@@ -89,8 +89,9 @@ from Modules.business_logic import entity_persistance_matcher_control
 # print(table_verifier.execute())
 
 # 3) Insert Data
-# table_insert = persistence_classes_single_key.InsertData("db", "books", [(1, 10,"book1", "auth1"), (2, 20, "book2", "auth2")])
-# table_insert.execute()s
+# table_insert = persistence_classes_single_key.InsertData("db", "books", [(1, 10,"book1", "auth1"),
+#                                                                          (2, 20, "book2", "auth2"), (3, 10, "book3", "auth3")])
+# table_insert.execute()
 
 # 4) Update Data
 # table_updater = persistence_classes_single_key.UpdateData("db", "books", ["qty", "id"], (100, 3))
@@ -175,7 +176,7 @@ from Modules.business_logic import entity_persistance_matcher_control
 # update_successful = persistance_control.perform_database_query()
 # print(update_successful)
 
-# # 5) Test for Table Row Deletion#
+# # 5) Test for Table Row Deletion
 # # Create Entity Object - Book
 # book_controller = book.BookController("Delete Entity")
 # delete_book = book_controller.create_crud_instance()
@@ -185,3 +186,4 @@ from Modules.business_logic import entity_persistance_matcher_control
 # delete_successful = persistance_control.perform_database_query()
 # print(delete_successful)
 
+###############################################################################

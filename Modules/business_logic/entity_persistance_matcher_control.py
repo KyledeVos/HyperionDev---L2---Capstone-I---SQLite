@@ -60,7 +60,7 @@ class EntityPersistanceSingleKeyControl:
         to use data from Entity_object to create and execute query against database
     """
 
-    def __init__(self, table_name, database_name, user_action):
+    def __init__(self, database_name, table_name, user_action):
         """Constructor to initialise 'EntityPersistanceSingleKeyControl'.
 
         Attributes:
@@ -170,16 +170,16 @@ class EntityControl:
             if book_entity is None:
                 print(
                     "Error Log - Invalid crud action has been supplied to 'book' class")
-            return book_entity
+            else:
+                return book_entity
         else:
             # table_name provided does not have a matching Entity Controller Class
             print("Error Log - Table name has not been matched to entity in Module " +
                   "'business logic'")
             return None
 
+
 # -------------------------------------------------------------------------------------------------
-
-
 class PersistanceSingleKeyControl:
     """Class using Entity Object dependency to retrieve correct data needed for query generation
         and execution against a database using 'persistence_classes_single_key' class.
@@ -274,7 +274,7 @@ class PersistanceSingleKeyControl:
                 # confirm that table does exist in database:
                 if table_exists is False:
                     print(
-                        f"Error Log - {self.table_name} does not exist, cannot perform " +
+                        f"Error Log - table '{self.table_name}' does not exist, cannot perform " +
                         "action on database")
                     return None
 

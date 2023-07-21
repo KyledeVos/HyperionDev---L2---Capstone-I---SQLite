@@ -1,30 +1,83 @@
-"""Module Holding Classes Matching an Entity Class to a Persistance Class and faciliates
-    the passing of correct data from Entity to Persistance Class. Use of this module should
-    be done only through Main class 'EntityPersistanceSingleKeyControl' passing database_name,
-    table_name and 'user_action' to constructor followed by call to method
-    'create_and_execute_query()'
+"""Module holding Classes matching an Entity Class to a Persistance Class and faciliates
+    the passing of correct data from Entity to Persistance Class. 
 
-Entity - Module of classes for controlling user_input and business logic (eg Book, Employee).
+    Entity - Module of classes for controlling user_input and business logic (eg Book, Employee).
      Classes should implement CRUD operations
 
-Persistance Class - A class or module of classes using data from an 'Entity' to create and execute
-                    Queries against a database.
+    Persistance Class - A class or module of classes using data from an 'Entity' to create and
+     execute queries against a database.
 
-Classes in this module take validated data (in the form of an object instance) from a user and
-use method calls for this module to determine the correct Persistance Classes to execute this data
-to a database.
+Module Usage:
+-------------
+Use of this module should be done only through class 'EntityPersistanceSingleKeyControl' passing
+ database_name, table_name and 'user_action' to constructor followed by call to method
+'create_and_execute_query()'
 
-Data is returned from database queries in the form of None, row(s) as lists and booleans to confirm
-database query execution statuses.
+user_action attribute used for Entity and Peristance classes initialisation and matching can only
+ be one of the following: 'Create Default Table', 'Create Entity', 'Search Entity' or 'Read Entity'
+ or 'Read All', 'Update Entity' and 'Delete Entity'
 
-Extensions of this class for additonal Entity and Persistance Classes should conform to the
-constructors of the Entity and Persistance classes given here with user_actions as
-'Create Default Table', 'Create Entity', 'Search Entity' or 'Read Entity' or 'Read All', 'Update Entity'
-and 'Delete Entity'.
+Module Extension Recommendations:
+---------------------------------
+Extensions of this module should conform to the constructors of the Entity and Persistance classes
+ with user_actions as described above.
+
+Classes:
+--------
+EntityPersistanceSingleKeyControl:
+    match initialised Entity (with data from user_input) to a corresponding
+    persistance class based on table name and desired user_action.
+
+    Methods:
+    --------
+    __init__(self, table_name, database_name, user_action):
+        Constructor to initialise 'EntityPersistanceSingleKeyControl' object with database_name, 
+        table_name, user_action, Entity Control and Persistance Control Objects.
+
+    __str__(self):
+        return attributes of 'EntityPersistanceSingleKeyControl' for testing.
+
+    create_and_execute_query(self):
+        make call to 'perform_database_query()' method in class 'PersistanceSingleKeyControl' 
+        to use data from Entity_object to create and execute query against database. Method
+        call is compulsory
+
+EntityControl:
+    initialise Entity based on table_name attribute and user_action - current Entity is for 'books'
+    table. Attributes of entity hold data required by Peristance Controller for execution
+    against a databases. Class instance created by 'EntityPersistanceSingleKeyControl'
+
+    Methods:
+    --------
+    __init__(self, table_name, user_action):
+        Constructor to initialise 'table_name' and desired CRUD 'user_action'.
+
+    __str()__:
+        return string of attributes 'field_name' and 'user_action' for class testing
+
+    initialise_entity(self):
+        use 'table_name' and 'user_action' to call relevant CRUD class, request user data
+        necessary for database query construction for 'EntityPersistanceSingleKeyControl'
+        class attribute 'persistance_object'
+
+PersistanceSingleKeyControl:
+    Retrieve correct data needed for query generation from Entity Object for execution
+    against a database
+
+    Methods:
+    --------
+    __init__(self, database_name, table_name, user_action, entity_object):
+        constructor to initialise attributes of 'PersistanceSingleKeyControl' class
+
+    __str__(self):
+        Return Attributes of PersistanceControl Class as string for testing
+
+    perform_database_query(self):
+        use 'user_action" attribute to create Entity Object (retrieves and validates user input).
+        and make call to relevant method in Persistance Class for execution against a database.
 """
 from Modules.business_logic import book
 from Modules.persistance_layer import persistence_classes_single_key
-
 
 class EntityPersistanceSingleKeyControl:
     """Class used to hold database_name, table_name and desired user_action. Initialises
@@ -207,7 +260,7 @@ class PersistanceSingleKeyControl:
         constructor to initialise attributes of 'PersistanceSingleKeyControl' class
 
     __str__(self):
-        "Return Attributes of PersistanceControl Class as string for testing
+        Return Attributes of PersistanceControl Class as string for testing
 
     perform_database_query(self):
         use 'user_action" attribute to create Entity Object (retrieves and validates user input).

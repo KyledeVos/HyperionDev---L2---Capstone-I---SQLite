@@ -1,22 +1,140 @@
-"""Module Holding Classes for Persistance Layer using SQLite3 module
+"""Module Holding Classes for Persistance Layer for tables with non-composite
+    primary_key using sqlite3. Classes here are referenced in other modules
+    as 'Persistance Controllers'
 
 Superclass 'DataBaseQueryClass' utilises helper class 'DatabaseController' to
 manage and abstract away database connections from creation of sqlite3 queries.
 
-Each child class allows for individual operations as:
-Create Table, Insert into Table, Read from Table,
-  Update Row in Table, Delete Row in Table
-Each class creates and closes its own connection to the database
+Module Usage:
+-------------
+Use of this module should only be through child classes of 'DataBaseQueryClass' as:
+'CreateTableSingleKey', 'VerifyTable', 'InsertData', 'ReadData', ''UpdateData' and
+'DeleteData'
+NOTE: all child classes have method 'execute()' that must be called for class usage
 
-Validation of inputs is not completed in this module - constructor arguments must
-be validated according to data types and requirements of each class before use of this module
+Classes:
+--------
+DatabaseController:
+    A Helper class controlling connection to a database with 'connection' and 'cursor' objects.
 
-Class Separations follow the Single Responsibility Principle. Design is generic
-to maximise reusability
+    Methods:
+    --------
+    __init__(self, database_name):
+        Initialize DataBaseController Object with connection and cursor objects for sqlite3
+
+    open_connection_and_create_cursor(self):
+        attempts to create connection to specified database or create database
+        if not present. Creates cursor object to database and returns cursor or
+        'None' if successful connection is not made
+
+    close_connection(self):
+        attempts to close connection to current database. Any class using 'DataBaseController'
+        instance MUST call this method.
+
+DataBaseQueryClass:
+    super class defining structure of methods to initialize database access object
+     and execution of query to database.
+
+    Methods:
+    --------
+    __init__(self, database_name, table_name):
+        instantiate instance of class
+
+    execute(self):
+        method defining logic to execute query against database. Must be overridden by child class.
+
+    create_database_connection(self):
+        attempt to create database connection and initialize "connection"
+        "cursor" objects
+
+CreateTableSingleKey:
+    Child class of DataBaseQueryClass allowing for creation of a new table in a Database using
+    sqlite3 with a non-compound Primary-Key. Fields are all set as "NOT NULL".
+
+    Methods:
+    --------
+    __init__(self, database_name, table_name, primary_key, int_list, text_list, float_list):
+        Initialize CreateTableSingleKey and parent DataBaseQueryClass objects allowing
+        for sqlite3 connection. Parent contructor attempts to create connection to database.
+
+    execute(self): 'override'
+        Use class attributes to create new table in database and then close database connection.
+
+VerifyTable:
+    child class of DataBaseQueryClass to verify if a table exists in specified database
+
+    Methods:
+    --------
+    __init__(self, database_name, table_name):
+        Constructor initialising VerifyTable and DataBaseQueryClass parent objects
+
+    execute(self): 'override'
+        Connect to database, create SQL query to return count of tables in database
+         with name equal to 'table_name'. Close Database Connection.
+
+InsertData:
+    Allows for insertion of single or multiple rows to table in database
+
+    Methods:
+    ----------------
+    __init__(self, database_name, table_name, row_data_list):
+        Initialize InsertData and parent DataBaseQueryClass objects allowing
+        for sqlite3 connection. Parent contructor attempts to create connection to database.
+
+    execute(self): 'override'
+        Use values in tuples of row_data_list to add row(s) to table and close database connection
+
+ReadData:
+    Allows reading of desired values from table and returns matching row(s)
+
+    Methods:
+    ----------------
+    __init__(self, database_name, table_name, fields_list, where_field_list, search_vals):
+        Initialize ReadData and parent DataBaseQueryClass objects allowing
+        for sqlite3 connection. Parent contructor attempts to create connection to database.
+
+    execute(self): 'override'
+        Search for and return matching row from table and close database connection
+
+UpdateData:
+    Modify a single field value for row in database using primary_key value
+
+    Methods:
+    ----------------
+    __init__(self, database_name, table_name, field_names, update_tuple):
+        Initialize UpdateData and parent DataBaseQueryClass objects allowing
+        for sqlite3 connection. Parent contructor attempts to create connection to database.
+
+    execute(self): 'override'
+        Attempt to update value in a row and close database connection
+
+DeleteData:
+    Delete a single row in database using only primary_key value
+
+    Methods:
+    ----------------
+    __init__(self, database_name, table_name, primary_key, key_value):
+        Initialize DeleteData and parent DataBaseQueryClass objects allowing
+        for sqlite3 connection. Parent contructor attempts to create connection to database.
+
+    execute(self): 'override'
+        Attempt to delete matching row and close database connection. Returns True or False
+        to confirm deletion of a row(s)
+
+ReturnLastId:
+    Retrieve primary_key value in last row of table in database.
+
+    Methods:
+    --------
+    __init__(self, database_name, table_name, primary_key):
+        Constructor initialising ReturnLastId and DataBaseQueryClass parent objects.
+
+    execute(self): 'override'
+        Connect to database, create SQL query to retrieve last row primary_key value.
+         Close Database Connection
 ------------------------------------------------------------------------------------
 """
 import sqlite3
-
 
 class DatabaseController():
     """A Helper class controlling connection to a database with 'connection' and 'cursor' objects.
@@ -34,8 +152,8 @@ class DatabaseController():
     Methods:
     ----------------
     __init__(self, database_name):
-        Initialize Data_Controller Object with connection and cursor objects
-        for SQLite3
+        Initialize DataBaseController Object with connection and cursor objects
+        for sqlite3
 
     open_connection_and_create_cursor(self):
         attempts to create connection to specified database or create database
@@ -43,7 +161,8 @@ class DatabaseController():
         'None' if successful connection is not made
 
     close_connection(self):
-        attempts to close connection to current database
+        attempts to close connection to current database. Any class using 'DataBaseController'
+        instance MUST call this method.
     """
 
     def __init__(self, database_name):
@@ -103,7 +222,7 @@ class DatabaseController():
 
 # -------------------------------------------------------------------------------------------------
 class DataBaseQueryClass():
-    """super class defining methods to initialize database access object
+    """super class defining structure of methods to initialize database access object
         and execution of query to database.
 
     Attributes:
@@ -126,11 +245,10 @@ class DataBaseQueryClass():
         instantiate instance of class
 
     execute(self):
-        method defining logic to execute query against database
+        method defining logic to execute query against database. Must be overridden by child class.
 
     create_database_connection(self):
-        attempt to create database connection and initialize "connection"
-        "cursor" objects
+        attempt to create database connection and initialize "connection" and "cursor" objects
     """
 
     def __init__(self, database_name, table_name):
@@ -221,7 +339,7 @@ class CreateTableSingleKey(DataBaseQueryClass):
         self.float_list = float_list
 
         # attempt to make connection to database (through super class)
-        # successful creation will initialise 'cursor' and 'connection' objects
+        # successful connection will initialise 'cursor' and 'connection' objects
         #   in parent class
         self.create_database_connection()
 
@@ -246,7 +364,7 @@ class CreateTableSingleKey(DataBaseQueryClass):
             return None
 
         try:
-            # create initial part of query string with table name and single primary-key field
+            # create initial part of query string with table name and single primary_key field
             query = (f"CREATE TABLE IF NOT EXISTS {self.table_name}({self.primary_key} " +
                      "INTEGER NOT NULL PRIMARY KEY")
 
@@ -281,10 +399,27 @@ class CreateTableSingleKey(DataBaseQueryClass):
 
 # -------------------------------------------------------------------------------------------------
 class VerifyTable(DataBaseQueryClass):
-    """Verify if a table exists in specified database."""
+    """Verify if a table exists in specified database.
+    
+    Attributes:
+    -----------
+    database_name: str
+        name of database to connect to
+    table_name: str
+        name of table in above database
+
+    Methods:
+    --------
+    __init__(self, database_name, table_name):
+        Constructor initialising VerifyTable and DataBaseQueryClass parent objects
+
+    execute(self):
+        Connect to database, create SQL query to return count of tables in database
+         with name equal to 'table_name'. Close Database Connection.
+    """
 
     def __init__(self, database_name, table_name):
-        """Constructor initialising VerufyTable and DataBaseQueryClass parent objects.
+        """Constructor initialising VerifyTable and DataBaseQueryClass parent objects.
 
         Arguments:
         ---------------
@@ -292,11 +427,11 @@ class VerifyTable(DataBaseQueryClass):
             name of the database to connect to, also serves as path to database
             file if not present in current directory
         table_name: str
-            name of new table to create in database
+            name of table to connect to in database
         """
         super().__init__(database_name, table_name)
         # attempt to make connection to database (through super class)
-        # successful creation will initialise 'cursor' and 'connection' objects
+        # successful connection will initialise 'cursor' and 'connection' objects
         self.create_database_connection()
 
     def execute(self):
@@ -307,7 +442,7 @@ class VerifyTable(DataBaseQueryClass):
         -----------
         Returns None if there was an error when attempting to connect to database
         Returns True if table count is 1 (table exists)
-        Returns False if table count is 0 (table doe not exist)
+        Returns False if table count is 0 (table does not exist)
 
         Exceptions:
         -----------
@@ -324,8 +459,9 @@ class VerifyTable(DataBaseQueryClass):
             # Referenced from Python Examples on 18 July 2023
             # Available from: https://pythonexamples.org/python-sqlite3-check-if-table-exists/
             table_count = self.cursor.execute("SELECT count(name) FROM sqlite_master WHERE " +
-                                              f"type='table' AND name=\'{self.table_name}\'").fetchone()
-            
+                                              f"type='table' AND name=\'{self.table_name}\'").\
+                fetchone()
+
             # if a table was found with matching name, return True. If not, return False
             return True if table_count[0] == 1 else False
 
@@ -344,14 +480,14 @@ class VerifyTable(DataBaseQueryClass):
 
 # -------------------------------------------------------------------------------------------------
 class InsertData(DataBaseQueryClass):
-    """Allows for insertion of single or multiple rows to table in database".
+    """Allows for insertion of single or multiple rows to table in database.
 
     Attributes:
     -----------------
     row_data_list: list of tuples
-        list containing at least one tuple with values to be inserted into table
-        table must exist in database with values checked to match type and count 
-        of table fields
+        list containing at least one tuple with values to be inserted into table.
+         table must exist in database with values checked to match type and count 
+         of table fields
 
     Methods:
     ----------------
@@ -372,7 +508,7 @@ class InsertData(DataBaseQueryClass):
             name of the database to connect to, also serves as path to database
             file if not present in current directory
         table_name: str
-            name of new table to create in database
+            name of table to connect to in database
         row_data_list: list of tuples (containing at least one)
             values to add in row(s) inserted into table
             NOTE: values MUST be added in same order as those used when table was created
@@ -380,7 +516,7 @@ class InsertData(DataBaseQueryClass):
         super().__init__(database_name, table_name)
         self.row_data_list = row_data_list
         # attempt to make connection to database (through super class)
-        # successful creation will initialise 'cursor' and 'connection' objects
+        # successful connection will initialise 'cursor' and 'connection' objects
         self.create_database_connection()
 
     def execute(self):
@@ -415,6 +551,7 @@ class InsertData(DataBaseQueryClass):
                 # stop adding commas for '?' separation
                 if i != (len(tup) - 1):
                     query += ", "
+            # close query string
             query += ")"
 
             if len(self.row_data_list) == 1:
@@ -444,12 +581,12 @@ class InsertData(DataBaseQueryClass):
 # -------------------------------------------------------------------------------------------------
 class ReadData(DataBaseQueryClass):
     """Allows for reading of desired values from table using multiple fields to
-        perform check of matching attributes. Returns matching row(s)".
+        perform check of matching attributes. Returns matching row(s).
 
     Attributes:
     -----------------
     fields_list: list of field names as strings
-        desired fields to return values (enter * for all)
+        desired fields to return values (provide '*' for all)
     where_fields_list: list of fields as strings
         field names used in WHERE part of query to perform checks on
     search_vals: tuple with entities matching type corresponding to entity in where_fields_list
@@ -465,7 +602,8 @@ class ReadData(DataBaseQueryClass):
         Search for and return matching row from table and close database connection
     """
 
-    def __init__(self, database_name, table_name, fields_list, where_field_list=None, search_vals=None):
+    def __init__(self, database_name, table_name, fields_list, where_field_list=None,
+                 search_vals=None):
         """Constructor initialising ReadData and parent DataBaseQueryClass objects.
 
         Arguments:
@@ -474,9 +612,9 @@ class ReadData(DataBaseQueryClass):
             name of the database to connect to, also serves as path to database
             file if not present in current directory
         table_name: str
-            name of new table to create in database
+            name of table to connect to in database
         fields_list: list of field names as strings
-            desired fields to return values
+            desired fields to return values from
         where_fields_list: list of fields as strings        
             field names used in WHERE part of query to perform checks on
         search_vals: tuple with entities matching type corresponding to entity in where_fields_list
@@ -487,7 +625,7 @@ class ReadData(DataBaseQueryClass):
         self.where_fields_list = where_field_list
         self.search_vals = search_vals
         # attempt to make connection to database (through super class)
-        # successful creation will initialise 'cursor' and 'connection' objects
+        # successful connection will initialise 'cursor' and 'connection' objects
         self.create_database_connection()
 
     def execute(self):
@@ -529,13 +667,15 @@ class ReadData(DataBaseQueryClass):
             # execute query and store returned row(s)
             # Case 1: Return all rows (no 'where' condition)
             if self.where_fields_list is None:
-                rows_returned =  self.cursor.execute(query).fetchall()
+                rows_returned = self.cursor.execute(query).fetchall()
             # Case 2: Single 'where' condition - manually add comma for tuple
             elif len(self.where_fields_list) == 1:
-                rows_returned = self.cursor.execute(query, (self.search_vals), ).fetchall()
+                rows_returned = self.cursor.execute(
+                    query, (self.search_vals), ).fetchall()
             # Case 3: Multiple 'where' conditions, use search_vals tuple as is
             else:
-                rows_returned = self.cursor.execute(query, self.search_vals).fetchall()
+                rows_returned = self.cursor.execute(
+                    query, self.search_vals).fetchall()
 
             # if at least one row was returned, retrieve field names
             # Referenced from AlixaProDev on 19 July 2023
@@ -543,7 +683,8 @@ class ReadData(DataBaseQueryClass):
             # https://www.alixaprodev.com/how-to-get-column-names-from-sqlite-database-table-in-python/
             if len(rows_returned) > 0:
                 self.cursor.execute(f"SELECT * FROM {self.table_name}")
-                field_names = tuple([description[0] for description in self.cursor.description])
+                field_names = tuple([description[0]
+                                    for description in self.cursor.description])
 
                 # combine field_names tuple and returned database rows
                 fields_and_values = []
@@ -568,7 +709,7 @@ class ReadData(DataBaseQueryClass):
 
 # -------------------------------------------------------------------------------------------------
 class UpdateData(DataBaseQueryClass):
-    """Modify a single field value for row in database".
+    """Modify a single field value for row in database using only Primary Key value.
 
     Attributes:
     -----------------
@@ -596,7 +737,7 @@ class UpdateData(DataBaseQueryClass):
             name of the database to connect to, also serves as path to database
             file if not present in current directory
         table_name: str
-            name of new table to create in database
+            name of table in above database
         field_names: list of two strings
             string1 - field to change, string2 - primary_key field
         update_tuple: tuple
@@ -606,7 +747,7 @@ class UpdateData(DataBaseQueryClass):
         self.field_names = field_names
         self.update_tuple = update_tuple
         # attempt to make connection to database (through super class)
-        # successful creation will initialise 'cursor' and 'connection' objects
+        # successful connection will initialise 'cursor' and 'connection' objects
         self.create_database_connection()
 
     def execute(self):
@@ -614,7 +755,8 @@ class UpdateData(DataBaseQueryClass):
 
         Return:
         -----------
-        Only returns None if there was an error when attempting to connect to database
+         None if there was an error when attempting to connect to database
+         True if one row was affected by update to database, False if no rows were affected
 
         Exceptions:
         -----------
@@ -634,9 +776,9 @@ class UpdateData(DataBaseQueryClass):
             self.cursor.execute(query, self.update_tuple)
             self.connection.commit()
 
-            # retrieve number of affected rows after deletion query has been executed
+            # retrieve number of affected rows after update query has been executed
             affected_rows = self.cursor.rowcount
-            # if at least one row was deleted, return True to confirm deletion
+            # if at least one row was updated, return True to confirm deletion
             return True if affected_rows > 0 else False
 
         except sqlite3.OperationalError as update_error:
@@ -652,7 +794,7 @@ class UpdateData(DataBaseQueryClass):
 
 # -------------------------------------------------------------------------------------------------
 class DeleteData(DataBaseQueryClass):
-    """Delete a single value row in database".
+    """Delete a single row in database using only Primary_key value.
 
     Attributes:
     -----------------
@@ -681,7 +823,7 @@ class DeleteData(DataBaseQueryClass):
             name of the database to connect to, also serves as path to database
             file if not present in current directory
         table_name: str
-            name of new table to create in database
+            name of table to connect to in database
         primary_key: str
             name of primary_key field
         key_value: type specific to table (cannot be composite) 
@@ -691,7 +833,7 @@ class DeleteData(DataBaseQueryClass):
         self.primary_key = primary_key
         self.key_value = key_value
         # attempt to make connection to database (through super class)
-        # successful creation will initialise 'cursor' and 'connection' objects
+        # successful connection will initialise 'cursor' and 'connection' objects
         self.create_database_connection()
 
     def execute(self):
@@ -738,7 +880,26 @@ class DeleteData(DataBaseQueryClass):
 
 # -------------------------------------------------------------------------------------------------
 class ReturnLastId(DataBaseQueryClass):
-    """Retrieve last row in Database."""
+    """Retrieve primary_key value in last row of table in database.
+    
+    Atrributes:
+    -----------
+    database_name: str
+        name of database to connect to
+    table_name: str
+        name of table in above database
+    primary_key: str
+        name of primary_key field
+
+    Methods:
+    --------
+    __init__(self, database_name, table_name, primary_key):
+        Constructor initialising ReturnLastId and DataBaseQueryClass parent objects.
+
+    execute(self):
+        Connect to database, create SQL query to retrieve last row primary_key value.
+         Close Database Connection
+    """
 
     def __init__(self, database_name, table_name, primary_key):
         """Constructor initialising ReturnLastId and DataBaseQueryClass parent objects.
@@ -749,24 +910,25 @@ class ReturnLastId(DataBaseQueryClass):
             name of the database to connect to, also serves as path to database
             file if not present in current directory
         table_name: str
-            name of new table to create in database
+            name of table to connect to in database
         primary_key: str
             name of primary_key field
         """
         super().__init__(database_name, table_name)
         self.primary_key = primary_key
         # attempt to make connection to database (through super class)
-        # successful creation will initialise 'cursor' and 'connection' objects
+        # successful connection will initialise 'cursor' and 'connection' objects
         self.create_database_connection()
 
     def execute(self):
-        """Connect to database, create SQL query to retrieve last row. Close Database Connection.
+        """Connect to database, create SQL query to retrieve last row primary_key value.
+            Close Database Connection.
 
         Return:
         -----------
         Returns None if there was an error when attempting to connect to database
-        Returns empty list if table in database is empty
-        Returns last row in table with field_values in a list
+        Returns 0 if table in database is empty (default primary_key value for Integer type)
+        Returns primary_key value for last row in non-empty table
 
         Exceptions:
         -----------
@@ -780,12 +942,13 @@ class ReturnLastId(DataBaseQueryClass):
             return None
         try:
             # create and execute query using primary_key field_name to return last row in database
-            row =  self.cursor.execute(f"SELECT * FROM {self.table_name} ORDER BY " +
-                                       f"{self.primary_key} DESC LIMIT 1").fetchall()
+            row = self.cursor.execute(f"SELECT * FROM {self.table_name} ORDER BY " +
+                                      f"{self.primary_key} DESC LIMIT 1").fetchall()
 
             # if table is empty, return 0
             if len(row) == 0:
                 return 0
+            # return primary key value of last row in table
             else:
                 return row[0][0]
 

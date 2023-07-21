@@ -1,46 +1,52 @@
 # Level 2 - Kyle de Vos (KD23040008523)
 # L2T13 - Capstone Project I
-# Date: 2 July 2023
+# Date: 21 July 2023
 # ____________________________________________________________
-""" This is the main program file used for the Capstone Project I application
-with the application modeling a book stock management system excluding
-company and financial data and functionality. 
+""" Project Description:
+    --------------------
+    Main program file used for the Capstone Project I application modeling a book stock
+    management system excluding company and financial data and functionality. Program
+    incorporates the use of sqlite3 allowing for CRUD operations
 
-This program allows the application to create a sqlite3 database 'ebookstore'
-in which a table 'books' is created. The application allows a user to:
-Create a new Book, Return all book data, Search for a book, Update the data
-for a book and Delete a book. 
+    Full Breakdown is available in the Software Requirements Document and ReadMe file
 
-A detailed breakdown of the programs functionality is available in the ReadMe
-and Software Requirements Documents, but a summary of the various Modules is
-as follows for quick reference
+Module Summary:
+---------------
 
-book_stock_management_system:
-    houses only the database name, table name, desired Application Controller
-     and View Renderer. Calls the Applicaton Controller application_run() method
-     to start application
-Modulues.ui_controller__view:
-    Holds Main Controller and View modules
-Modules.business_logic.book:
-    Entity object controlling book attributes, above functionality and user_input
-     for attributes. Field names and types have been given a centralised control
-     by class 'FieldControl'
-Modules.business_logic.entity_persistance_matcher_control:
-    'linker class' using data from Entity Object to pass to persistance Controller
-Modules.persistance_layer.persistance_classes_single_key: 
+- book_stock_management_system:
+    houses database name, table name, desired Application Controller and View Renderer instances.
+     Calls the Applicaton Controller application_run() method to start application
+- Modulues.ui_controller__view:
+    Main Application Controller and View Renderer modules
+- Modules.business_logic.book:
+    Book Entity object controlling attributes, above functionality and user_input
+     for attributes. Field names and types have central control in class 'FieldControl'
+- Modules.business_logic.entity_persistance_matcher_control:
+    'linker class' using data from Entity Object to pass to Persistance Controller
+- Modules.persistance_layer.persistance_classes_single_key: 
     Persistance Controller using data from Entity Object to create and execute queries
 
-This application attempts to implement:
-Single-Use Responsibility
-Open-Closed Principle
-Dependency Decoupling
-A variant architecture composed of MVC, Layered and Repository Designs
+Architecture:
+--------------
+Variant architecture composed of MVC, Layered and Central Repository Designs
 
-NOTE: all classes and modules are designed to work with tables that do not
+Other:
+------
+Project was designed with strong considerations of:
+- Single-Use Responsibility
+- Open-Closed Principle
+- Dependency Decoupling
+
+Restrictions:
+-------------
+Classes and modules are designed to work with tables that do not
 use a composite primary_key. It is recommended that the primary_key type 
 be Integer (set in Modules.busines_logic.book.FieldControl class)
 """
+
+# Application Controller (MVC - Controller)
 from Modules.ui_controller_view import book_stock_application_controller
+# View Renderer (MVC - View)
 from Modules.ui_controller_view import view_render
 
 # set preferred database_name, table_name
@@ -53,4 +59,3 @@ APPLICATION_CONTROLLER = book_stock_application_controller.BookStoreController(
 
 # use application controller to begin run of application
 APPLICATION_CONTROLLER.application_run()
-

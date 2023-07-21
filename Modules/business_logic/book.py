@@ -1,34 +1,132 @@
-"""
-Module holding classes for user_input retrieval and validation for 'book' table
-with a single primary key. Module has individual classes to handle CRUD operation data
-retrieval. Imports and use of this module MUST be done as:
+"""Module holding classes for user_input retrieval and validation for 'book' table with a
+     single primary key. Individual classes handle CRUD operations and data retrieval.
+     Other Modules reference classes here as "Entities"
 
-1) Use of Component class 'FieldControl' to set primary_field name and other
-    field names and types. This component Class and all other Composite classes
-    only allow for types as 'Integer', 'String' and 'Float'. Fields are set within 
-    constructor and class instance should not be created seperate from this module.
+Module Usage:
+------------
+Use of this module should only be through 'BookController' with 'action' attribute to determine
+correct instance of other classes to create and return followed by call to 'create_crud_instance()'
+Valid BookController Arguments are:
+ 'Create Default Table', 'Create Entity', 'Search Entity' or 'Read Entity' or 'Read All',
+    'Update Entity' and 'Delete Entity'.
 
-2) Control class 'BookController' with 'action' attribute to determine correct instance
-    of other classes to create and return. 
-    Valid BookController Arguments are:
-    "Create Default Table", "Create Entity", "Search Entity" or 'Read Entity' or "Read All",
-        "Update Entity" and "Delete Entity"
+Classes:
+--------
+FieldControl:
+    A component used to set and control the names and types of fields that would be present in
+        a database. Additional value_range attributes are added for Integer and Float fields.
 
-3) Function 'create_crud_instance()' in BookController MUST then be called for correct class
-    instance return for CRUD Operation
+    Methods:
+    -------
+    __init__(self):
+        used to initialise component and set primary_key, field names and their associated types
 
-NOTE: Database logic and queries are not handled by classes within this module. All
-classes return a populated instance to calling method or None. 
+    __str__(self):
+        print all declared field_names and types for testing
 
-The order of Fields (which should be extended to the Database by any class utilising this module) is:
-Primary_Key
-Integer_Values
-Text_Values
-Float_Values
+    primary_key_field_getter(self):
+        Getter to return primary_key field_name
 
-Values within each category would be ordered sequentially
+    __return_field_names(self, field_list):
+        'private', helper method to return the names of fields from a list of tuples with
+        first value in tuple equal to field name
 
-Classes designed with high consideration of Single Responsibility and Open-Closed Principles.
+    __check_no_list_duplicates(self, check_list):
+        'private', helper method to check for any duplicates in check_list
+
+BookController:
+    Main class of Module used to determine lower class instance to return
+    based on 'book-action' with method 'create_crud_instance()' that must be called.
+
+    Methods:
+    --------
+    __init__(self, book_action):
+        initialise instance of BookController
+
+    create_crud_instance(self):
+        Compulsory method that must be called after initialisation of 'BookController'.
+         instantiates instance of lower class based on attribute 'book_action' and
+         returns data (if appliable)
+
+CreateDefaultTable:
+    Define default field values for 'books' table using single Primary Key field
+
+    Methods:
+    ---------
+    __init__(self):
+        define instance for single primary_key default book table using component
+        FieldControl instance for field_names and types
+
+    __str__(self):
+        return string of class attributes for testing
+
+CreateBook:
+    Request and Validate User Input to create a 'Book' Object.
+
+    Methods:
+    --------
+    __init__(self):
+        call respective methods to request and retrieve user_input for class attributes
+
+    __str__(self):
+        return string of class attributes for testing
+
+    retrieve_string_value(self, input_field):
+        request and validate user_input for a string (text) based attribute
+
+    def retrieve_numeric_value(self, data_type, input_field, error_message, value_range=None):
+        use parameters to request and validate user input for a numeric based attribute
+
+BookSearch:
+    Request and validate user_input to initialise class instance with field_names and search
+        values corresponding to a book search
+
+    Methods:
+    --------
+    __init__(self):
+        Constructor used to create class instance with attributes retrieved from user, using
+        class method 'search_book_single_field' to retrieve and set class instance attributes
+
+    __str__(self):
+        return string containing values for class attributes for testing
+
+    search_book_single_field(self, int_list, text_list, float_list):
+        retrieve and validate user inputs to determine desired fields and values used
+        when performing book search. Method will instantiate class attributes. Returns
+        None for invalid argmuments in method call.
+
+BookUpdate:
+    Retrieve desired user field and associated value to perform update to field. Update is only
+        performed using primary key for 'book' entity.
+
+    Methods:
+    --------
+    __init__(self):
+        initialise attributes of BookUpdate instance and call 'update_book_single_field()'
+        to retrieve and validate user_inputs for update
+
+    __str__(self):
+        testing method to print values in 'field_names' and 'update_tuple' attributes
+
+    update_book_single_field(self):
+        request, retrieve and validate user_input for desired field and value for update
+        of book entity
+
+BookDelete:
+    Retrieve primary_key field name from field_controller, request and retrieve associated value
+        for primary_key matching data_type for desired row deletion.
+
+    Methods:
+    --------
+    __init__(self):
+        initialise attributes of BookDelete instance
+
+    __str__(self):
+        testing method to print values in 'primary_key_field' and 'primary_value' attributes
+
+    retrieve_deletion_value(self):
+        request, retrieve and validate user_input for primary_key to perform row deletion
+        in a database
 """
 
 class FieldControl():
@@ -68,8 +166,8 @@ class FieldControl():
         Getter to return primary_key field_name
 
     __return_field_names(self, field_list):
-        'private', helper method to return the names of fields from a list of tuples with first value
-        in tuple equal to field name
+        'private', helper method to return the names of fields from a list of tuples with
+        first value in tuple equal to field name
 
     __check_no_list_duplicates(self, check_list):
         'private', helper method to check for any duplicates in check_list
@@ -77,11 +175,13 @@ class FieldControl():
 
     def __init__(self):
         """Constructor to set primary_key, field names, associated types and possible value range.
-            Tuples MUST have first two values as 'field_name' and 'data_type'. Integer and Float Lists
-            must have third and fourth values as min and max for range checks (use None if not applicable).
+            Tuples MUST have first two values as 'field_name' and 'data_type'. Integer and Float
+            Lists must have third and fourth values as min and max for range checks (use None
+            if not applicable).
         """
         self.primary_key = ("id", "int")
-        # set int value of 'quantity' to have a lower, inclusive limit of zero and no preset upper limit.
+        # set int value of 'quantity' to have a lower, inclusive limit of zero and no preset
+        #  upper limit.
         self.int_list = [("qty", "int", 0, None)]
         self.text_list = [("author", "text"), ("title", "text")]
         self.float_list = []
@@ -116,12 +216,12 @@ class FieldControl():
             fields contained with class atrribute lists of tuples
 
         Keyword Arguments:
-        -----------
+        ------------------
         field_list: list of tuples
             list containing tuples that MUST conform to tuple[0] = field_name as string
 
         Return:
-        ---------
+        -------
         list containing the names of fields from 'field_list' (may return empty list)
         """
         return [tup[0] for tup in field_list]
@@ -170,7 +270,7 @@ class BookController:
     ------------
     book_action: String
         used to determine lower class instance to return. Values can only be one of:
-        'Create Default Table', 'Create Entity', 'Search Entity' or 'Read Entity' or 
+        'Create Default Table', 'Create Entity', 'Search Entity' or 'Read Entity' or
         'Read All', 'Update Entity' and 'Delete Entity'
 
     Methods:
@@ -180,10 +280,10 @@ class BookController:
 
     create_crud_instance(self):
         Compulsory method that must be called after initialisation of 'BookController'
-        determine instance of lower class to instantiate and return based on
-        attribute 'book_action' Returns none for 'book_action' not matching:
-        'Create Default Table', 'Create Entity', 'Search Entity' or 'Read Entity' or 'Read All',
-        'Update Entity' and 'Delete Entity'
+         to determine instance of lower class to instantiate and return based on
+         attribute 'book_action' Returns none for 'book_action' not matching:
+         'Create Default Table', 'Create Entity', 'Search Entity' or 'Read Entity' or 'Read All',
+         'Update Entity' and 'Delete Entity'
     """
 
     def __init__(self, book_action):
@@ -191,15 +291,13 @@ class BookController:
         self.book_action = book_action
 
     def create_crud_instance(self):
-        """uses 'book_action" to determine object to instantiate of lower classes.
-        NOTE: Constructors for each class will call respective method to create
-              required object instance
-        """
+        """uses 'book_action" to determine object to instantiate of lower classes."""
         if self.book_action == "Create Default Table":
             return CreateDefaultBookTable()
         elif self.book_action == "Create Entity":
             return CreateBook()
-        elif self.book_action == "Search Entity" or self.book_action == "Read Entity" or self.book_action == "Read All":
+        elif self.book_action == "Search Entity" or self.book_action == "Read Entity" \
+                or self.book_action == "Read All":
             return BookSearch(self.book_action)
         elif self.book_action == "Update Entity":
             return BookUpdate()
@@ -212,8 +310,7 @@ class BookController:
 
 # -------------------------------------------------------------------------------------------------
 class CreateDefaultBookTable:
-    """Define instance default field values for 'books' table using single Primary Key
-        field.
+    """Define instance default field values for 'books' table using single Primary Key field.
 
     Attributes:
     ------------
@@ -231,7 +328,7 @@ class CreateDefaultBookTable:
     Methods:
     ---------
     __init__(self):
-        define instance for single primary-key default book table using component
+        define instance for single primary_key default book table using component
         FieldControl instance for field_names and types
 
     __str__(self):
@@ -256,8 +353,8 @@ class CreateDefaultBookTable:
 
 # -------------------------------------------------------------------------------------------------
 class CreateBook:
-    """Request and Validate User Input to create a 'Book' Object. 'id'
-    for primary key in books table is not handled or added here or in this module.
+    """Request and Validate User Input to create a 'Book' Object. 'id' for primary key in books
+        table is not added here.
 
     Attributes:
     ------------
@@ -445,10 +542,6 @@ class CreateBook:
 class BookSearch:
     """Request and validate user_input to initialise class instance with field_names and search
         values corresponding to a book search.
-        NOTE: whilst the database query executions may still execute even with invalid data_types
-              or values out of a given range, validation was added (here and in field_control) to
-              allow for potential restriction of search values adding to possible scalability of
-              project in addition to maintaining control of data_types in application.
 
     "Attributes:
     ------------
@@ -745,8 +838,8 @@ class BookUpdate:
 
     def __init__(self):
         """Constructor to initialise field_control component controlling field names, types and 
-        ranges (for numeric fields). Calls 'update_book_single_field()' method to retrieve and validate 
-        user inputs used to set class attributes.
+            ranges (for numeric fields). Calls 'update_book_single_field()' method to retrieve and
+            validate  user inputs used to set class attributes.
 
         Attributes:
         -----------
@@ -939,7 +1032,7 @@ class BookUpdate:
 # -------------------------------------------------------------------------------------------------
 class BookDelete:
     """Retrieve primary_key field name from field_controller, request and retrieve associated value
-        for primary_key matching data_type.
+        for primary_key matching data_type for desired row deletion.
 
         Attributes:
         -----------

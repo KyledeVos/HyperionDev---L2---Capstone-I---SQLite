@@ -1,5 +1,5 @@
 """Module holding Classes matching an Entity Class to a Persistance Class and faciliates
-    the passing of correct data from Entity to Persistance Class. 
+    the passing of correct data from Entity to Persistance Class.
 
     Entity - Module of classes for controlling user_input and business logic (eg Book, Employee).
      Classes should implement CRUD operations
@@ -38,7 +38,7 @@ EntityPersistanceSingleKeyControl:
         return attributes of 'EntityPersistanceSingleKeyControl' for testing.
 
     create_and_execute_query(self):
-        make call to 'perform_database_query()' method in class 'PersistanceSingleKeyControl' 
+        make call to 'perform_database_query()' method in class 'PersistanceSingleKeyControl'
         to use data from Entity_object to create and execute query against database. Method
         call is compulsory
 

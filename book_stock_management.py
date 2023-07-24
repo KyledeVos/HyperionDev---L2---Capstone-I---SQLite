@@ -1,6 +1,6 @@
 # Level 2 - Kyle de Vos (KD23040008523)
 # L2T13 - Capstone Project I
-# Date: 21 July 2023
+# Date: 24 July 2023
 # ____________________________________________________________
 """ Project Description:
     --------------------
@@ -42,7 +42,7 @@ Restrictions:
 Classes and modules are designed to work with tables that do not
 use a composite primary_key. It is recommended that the primary_key type 
 be Integer (set in Modules.busines_logic.book.FieldControl class)
-"""
+""" 
 
 # Application Controller (MVC - Controller)
 from Modules.ui_controller_view import book_stock_application_controller

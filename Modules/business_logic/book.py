@@ -162,9 +162,6 @@ class FieldControl():
     __str__(self):
         print all declared field_names and types for testing
 
-    primary_key_field_getter(self):
-        Getter to return primary_key field_name
-
     __return_field_names(self, field_list):
         'private', helper method to return the names of fields from a list of tuples with
         first value in tuple equal to field name
@@ -566,10 +563,7 @@ class BookSearch:
     search_book_single_field(self, int_list, text_list, float_list):
         retrieve and validate user inputs to determine desired fields and values used
         when performing book search. Method will instantiate class attributes. Returns
-        None for invalid argmuments in method call.
-
-    check_no_list_duplicates(self, int_list, text_list, float_list):
-        Helper Function to check if list arguments contain any duplicated values between them
+        None for invalid argmuments in method call. 
     """
     # name(s) of field values to return in database book search.
     fields_list = None

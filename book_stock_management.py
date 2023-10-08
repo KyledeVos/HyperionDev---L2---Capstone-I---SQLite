@@ -2,6 +2,10 @@
 # L2T13 - Capstone Project I
 # Date: 24 July 2023
 # ____________________________________________________________
+
+# NOTE: This Python file acts only as the Application Launcher with the other
+# project files contained in Directory "Modules" broken down into sub-directories
+
 """ Project Description:
     --------------------
     Main program file used for the Capstone Project I application modeling a book stock
